@@ -104,11 +104,8 @@ RUN make install-strip
 
 FROM scratch AS base
 
-# Copy certificate bundle
-COPY --from=build /tmp/curl/ca-bundle.crt /ca-bundle.crt
-
-# Copy cURL build
-COPY --from=build /tmp/usr/bin/curl /curl
+# Copy cURL binary and certificate bundle
+COPY --from=build /tmp/usr/bin/curl /tmp/curl/ca-bundle.crt /
 
 ##################################################
 ## "test" stage
