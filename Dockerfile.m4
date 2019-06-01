@@ -4,8 +4,8 @@ m4_changequote([[, ]])
 ## "build" stage
 ##################################################
 
-m4_ifdef([[CROSS_ARCH]], [[FROM CROSS_ARCH/alpine:edge]], [[FROM alpine:edge]]) AS build
-m4_ifdef([[CROSS_QEMU]], [[COPY --from=hectormolinero/qemu-user-static:latest CROSS_QEMU CROSS_QEMU]])
+m4_ifdef([[CROSS_ARCH]], [[FROM docker.io/CROSS_ARCH/alpine:edge]], [[FROM docker.io/alpine:edge]]) AS build
+m4_ifdef([[CROSS_QEMU]], [[COPY --from=docker.io/hectormolinero/qemu-user-static:latest CROSS_QEMU CROSS_QEMU]])
 
 # Install system packages
 RUN apk add --no-cache \
@@ -101,7 +101,7 @@ COPY --from=build /tmp/usr/bin/curl /tmp/curl/ca-bundle.crt /
 ##################################################
 
 FROM base AS test
-m4_ifdef([[CROSS_QEMU]], [[COPY --from=hectormolinero/qemu-user-static:latest CROSS_QEMU CROSS_QEMU]])
+m4_ifdef([[CROSS_QEMU]], [[COPY --from=docker.io/hectormolinero/qemu-user-static:latest CROSS_QEMU CROSS_QEMU]])
 
 RUN ["/curl", "--version"]
 RUN ["/curl", "--verbose", "--silent", "https://cloudflare.com"]
