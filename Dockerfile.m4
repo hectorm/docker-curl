@@ -69,7 +69,7 @@ RUN make -j"$(nproc)"
 RUN make install
 
 # Build cURL
-ARG CURL_TREEISH=curl-7_65_1
+ARG CURL_TREEISH=curl-7_65_2
 ARG CURL_REMOTE=https://github.com/curl/curl.git
 ARG CURL_TESTS=enabled
 RUN mkdir /tmp/curl/
