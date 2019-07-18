@@ -44,7 +44,7 @@ RUN make -j"$(nproc)"
 RUN make install
 
 # Build OpenSSL
-ARG OPENSSL_TREEISH=OpenSSL_1_1_1b
+ARG OPENSSL_TREEISH=OpenSSL_1_1_1c
 ARG OPENSSL_REMOTE=https://github.com/openssl/openssl.git
 RUN mkdir /tmp/openssl/
 WORKDIR /tmp/openssl/
