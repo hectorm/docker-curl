@@ -12,12 +12,17 @@ RUN apk add --no-cache \
 		autoconf \
 		automake \
 		build-base \
+		cargo \
+		cmake \
+		coreutils \
 		curl \
 		git \
+		go \
 		libtool \
 		linux-headers \
 		perl \
-		pkgconf
+		pkgconf \
+		rust
 
 # Switch to unprivileged user
 ENV USER=builder GROUP=builder
@@ -26,9 +31,12 @@ RUN adduser -S -G "${GROUP}" "${USER}"
 USER "${USER}:${GROUP}"
 
 # Environment
-ENV CFLAGS='-O2 -fPIE -fstack-protector-strong -frandom-seed=42 -Wformat -Werror=format-security'
+ENV TMPPREFIX=/tmp/usr
+ENV CFLAGS='-O2 -fPIC -fPIE -fstack-protector-strong -frandom-seed=42 -Wformat -Werror=format-security'
+ENV CXXFLAGS=${CFLAGS}
 ENV CPPFLAGS='-Wdate-time -D_FORTIFY_SOURCE=2'
 ENV LDFLAGS='--static -Wl,-z,relro -Wl,-z,now'
+ENV PKG_CONFIG_PATH=${TMPPREFIX}/lib/pkgconfig
 ENV LC_ALL=C TZ=UTC SOURCE_DATE_EPOCH=1
 
 # Build zlib
@@ -39,21 +47,26 @@ WORKDIR /tmp/zlib/
 RUN git clone "${ZLIB_REMOTE}" ./
 RUN git checkout "${ZLIB_TREEISH}"
 RUN git submodule update --init --recursive
-RUN ./configure --prefix=/tmp/usr --static
+RUN ./configure --prefix="${TMPPREFIX}" --static
 RUN make -j"$(nproc)"
 RUN make install
 
-# Build OpenSSL
-ARG OPENSSL_TREEISH=OpenSSL_1_1_1c
-ARG OPENSSL_REMOTE=https://github.com/openssl/openssl.git
-RUN mkdir /tmp/openssl/
-WORKDIR /tmp/openssl/
-RUN git clone "${OPENSSL_REMOTE}" ./
-RUN git checkout "${OPENSSL_TREEISH}"
+# Build BoringSSL
+ARG BORINGSSL_TREEISH=master
+ARG BORINGSSL_REMOTE=https://boringssl.googlesource.com/boringssl.git
+RUN mkdir /tmp/boringssl/
+WORKDIR /tmp/boringssl/
+RUN git clone "${BORINGSSL_REMOTE}" ./
+RUN git checkout "${BORINGSSL_TREEISH}"
 RUN git submodule update --init --recursive
-RUN ./config --prefix=/tmp/usr no-shared no-engine
-RUN make build_libs OPENSSLDIR= ENGINESDIR= -j"$(nproc)"
-RUN make install_dev
+RUN mkdir /tmp/boringssl/build/
+WORKDIR /tmp/boringssl/build/
+RUN cmake ./ -D CMAKE_POSITION_INDEPENDENT_CODE=1 ../
+RUN make -j"$(nproc)"
+RUN cp -a ./crypto/libcrypto.a "${TMPPREFIX}"/lib/libcrypto.a
+RUN cp -a ./decrepit/libdecrepit.a "${TMPPREFIX}"/lib/libdecrepit.a
+RUN cp -a ./ssl/libssl.a "${TMPPREFIX}"/lib/libssl.a
+RUN cp -a ../include/openssl/ "${TMPPREFIX}"/include/openssl/
 
 # Build Nghttp2
 ARG NGHTTP2_TREEISH=v1.39.2
@@ -64,12 +77,27 @@ RUN git clone "${NGHTTP2_REMOTE}" ./
 RUN git checkout "${NGHTTP2_TREEISH}"
 RUN git submodule update --init --recursive
 RUN autoreconf -i && automake && autoconf
-RUN ./configure --prefix=/tmp/usr --enable-static --disable-shared --enable-lib-only
+RUN ./configure --prefix="${TMPPREFIX}" --enable-static --disable-shared --enable-lib-only
 RUN make -j"$(nproc)"
 RUN make install
 
+# Build Quiche
+ARG QUICHE_TREEISH=master
+ARG QUICHE_REMOTE=https://github.com/cloudflare/quiche.git
+RUN mkdir /tmp/quiche/
+WORKDIR /tmp/quiche/
+RUN git clone "${QUICHE_REMOTE}" ./
+RUN git checkout "${QUICHE_TREEISH}"
+RUN git submodule update --init --recursive
+RUN QUICHE_BSSL_PATH=/tmp/boringssl cargo build --release --features=pkg-config-meta
+RUN cp -a ./include/quiche.h "${TMPPREFIX}"/include/quiche.h
+RUN cp -a ./target/release/libquiche.a "${TMPPREFIX}"/lib/libquiche.a
+RUN cp -a ./target/release/quiche.pc "${TMPPREFIX}"/lib/pkgconfig/quiche.pc
+RUN sed -i "s|^\(includedir\)=.*$|\1=${TMPPREFIX}/include|g" "${TMPPREFIX}"/lib/pkgconfig/quiche.pc
+RUN sed -i "s|^\(libdir\)=.*$|\1=${TMPPREFIX}/lib|g" "${TMPPREFIX}"/lib/pkgconfig/quiche.pc
+
 # Build cURL
-ARG CURL_TREEISH=curl-7_65_3
+ARG CURL_TREEISH=master
 ARG CURL_REMOTE=https://github.com/curl/curl.git
 ARG CURL_TESTS=enabled
 RUN mkdir /tmp/curl/
@@ -79,11 +107,12 @@ RUN git checkout "${CURL_TREEISH}"
 RUN git submodule update --init --recursive
 RUN ./buildconf
 RUN ./lib/mk-ca-bundle.pl ./ca-bundle.crt
-RUN ./configure --prefix=/tmp/usr --enable-static --disable-shared \
+RUN ./configure --prefix="${TMPPREFIX}" --enable-static --disable-shared \
 		--with-ca-bundle=./ca-bundle.crt \
-		--with-zlib=/tmp/usr \
-		--with-ssl=/tmp/usr \
-		--with-nghttp2=/tmp/usr
+		--with-zlib="${TMPPREFIX}" \
+		--with-ssl="${TMPPREFIX}" \
+		--with-nghttp2="${TMPPREFIX}" \
+		--with-quiche="${TMPPREFIX}"/lib/pkgconfig
 RUN make -j"$(nproc)"
 RUN make install-strip
 
@@ -107,6 +136,7 @@ RUN ["/curl", "--version"]
 RUN ["/curl", "--verbose", "--silent", "https://cloudflare.com"]
 RUN ["/curl", "--verbose", "--silent", "--http2-prior-knowledge", "--tlsv1.3", "https://cloudflare.com"]
 RUN ["/curl", "--verbose", "--silent", "--doh-url", "https://1.1.1.1/dns-query", "https://cloudflare.com"]
+RUN ["/curl", "--verbose", "--silent", "--http3", "https://quic.tech:8443"]
 
 ##################################################
 ## "curl" stage
