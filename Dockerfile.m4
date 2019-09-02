@@ -21,8 +21,8 @@ RUN apk add --no-cache \
 
 # Switch to unprivileged user
 ENV USER=builder GROUP=builder
-RUN addgroup -S "${GROUP}"
-RUN adduser -S -G "${GROUP}" "${USER}"
+RUN addgroup -S "${GROUP:?}"
+RUN adduser -S -G "${GROUP:?}" "${USER:?}"
 USER "${USER}:${GROUP}"
 
 # Environment
@@ -36,8 +36,8 @@ ARG ZLIB_TREEISH=v1.2.11
 ARG ZLIB_REMOTE=https://github.com/madler/zlib.git
 RUN mkdir /tmp/zlib/
 WORKDIR /tmp/zlib/
-RUN git clone "${ZLIB_REMOTE}" ./
-RUN git checkout "${ZLIB_TREEISH}"
+RUN git clone "${ZLIB_REMOTE:?}" ./
+RUN git checkout "${ZLIB_TREEISH:?}"
 RUN git submodule update --init --recursive
 RUN ./configure --prefix=/tmp/usr --static
 RUN make -j"$(nproc)"
@@ -48,8 +48,8 @@ ARG OPENSSL_TREEISH=OpenSSL_1_1_1c
 ARG OPENSSL_REMOTE=https://github.com/openssl/openssl.git
 RUN mkdir /tmp/openssl/
 WORKDIR /tmp/openssl/
-RUN git clone "${OPENSSL_REMOTE}" ./
-RUN git checkout "${OPENSSL_TREEISH}"
+RUN git clone "${OPENSSL_REMOTE:?}" ./
+RUN git checkout "${OPENSSL_TREEISH:?}"
 RUN git submodule update --init --recursive
 RUN ./config --prefix=/tmp/usr no-shared no-engine
 RUN make build_libs OPENSSLDIR= ENGINESDIR= -j"$(nproc)"
@@ -60,8 +60,8 @@ ARG NGHTTP2_TREEISH=v1.39.2
 ARG NGHTTP2_REMOTE=https://github.com/nghttp2/nghttp2.git
 RUN mkdir /tmp/nghttp2/
 WORKDIR /tmp/nghttp2/
-RUN git clone "${NGHTTP2_REMOTE}" ./
-RUN git checkout "${NGHTTP2_TREEISH}"
+RUN git clone "${NGHTTP2_REMOTE:?}" ./
+RUN git checkout "${NGHTTP2_TREEISH:?}"
 RUN git submodule update --init --recursive
 RUN autoreconf -i && automake && autoconf
 RUN ./configure --prefix=/tmp/usr --enable-static --disable-shared --enable-lib-only
@@ -74,8 +74,8 @@ ARG CURL_REMOTE=https://github.com/curl/curl.git
 ARG CURL_TESTS=enabled
 RUN mkdir /tmp/curl/
 WORKDIR /tmp/curl/
-RUN git clone "${CURL_REMOTE}" ./
-RUN git checkout "${CURL_TREEISH}"
+RUN git clone "${CURL_REMOTE:?}" ./
+RUN git checkout "${CURL_TREEISH:?}"
 RUN git submodule update --init --recursive
 RUN ./buildconf
 RUN ./lib/mk-ca-bundle.pl ./ca-bundle.crt
