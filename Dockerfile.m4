@@ -26,8 +26,8 @@ RUN apk add --no-cache \
 
 # Switch to unprivileged user
 ENV USER=builder GROUP=builder
-RUN addgroup -S "${GROUP}"
-RUN adduser -S -G "${GROUP}" "${USER}"
+RUN addgroup -S "${GROUP:?}"
+RUN adduser -S -G "${GROUP:?}" "${USER:?}"
 USER "${USER}:${GROUP}"
 
 # Environment
@@ -44,10 +44,10 @@ ARG ZLIB_TREEISH=v1.2.11
 ARG ZLIB_REMOTE=https://github.com/madler/zlib.git
 RUN mkdir /tmp/zlib/
 WORKDIR /tmp/zlib/
-RUN git clone "${ZLIB_REMOTE}" ./
-RUN git checkout "${ZLIB_TREEISH}"
+RUN git clone "${ZLIB_REMOTE:?}" ./
+RUN git checkout "${ZLIB_TREEISH:?}"
 RUN git submodule update --init --recursive
-RUN ./configure --prefix="${TMPPREFIX}" --static
+RUN ./configure --prefix="${TMPPREFIX:?}" --static
 RUN make -j"$(nproc)"
 RUN make install
 
@@ -56,28 +56,28 @@ ARG BORINGSSL_TREEISH=master
 ARG BORINGSSL_REMOTE=https://boringssl.googlesource.com/boringssl.git
 RUN mkdir /tmp/boringssl/
 WORKDIR /tmp/boringssl/
-RUN git clone "${BORINGSSL_REMOTE}" ./
-RUN git checkout "${BORINGSSL_TREEISH}"
+RUN git clone "${BORINGSSL_REMOTE:?}" ./
+RUN git checkout "${BORINGSSL_TREEISH:?}"
 RUN git submodule update --init --recursive
 RUN mkdir /tmp/boringssl/build/
 WORKDIR /tmp/boringssl/build/
 RUN cmake ./ -D CMAKE_POSITION_INDEPENDENT_CODE=1 ../
 RUN make -j"$(nproc)"
-RUN cp -a ./crypto/libcrypto.a "${TMPPREFIX}"/lib/libcrypto.a
-RUN cp -a ./decrepit/libdecrepit.a "${TMPPREFIX}"/lib/libdecrepit.a
-RUN cp -a ./ssl/libssl.a "${TMPPREFIX}"/lib/libssl.a
-RUN cp -a ../include/openssl/ "${TMPPREFIX}"/include/openssl/
+RUN cp -a ./crypto/libcrypto.a "${TMPPREFIX:?}"/lib/libcrypto.a
+RUN cp -a ./decrepit/libdecrepit.a "${TMPPREFIX:?}"/lib/libdecrepit.a
+RUN cp -a ./ssl/libssl.a "${TMPPREFIX:?}"/lib/libssl.a
+RUN cp -a ../include/openssl/ "${TMPPREFIX:?}"/include/openssl/
 
 # Build Nghttp2
 ARG NGHTTP2_TREEISH=v1.39.2
 ARG NGHTTP2_REMOTE=https://github.com/nghttp2/nghttp2.git
 RUN mkdir /tmp/nghttp2/
 WORKDIR /tmp/nghttp2/
-RUN git clone "${NGHTTP2_REMOTE}" ./
-RUN git checkout "${NGHTTP2_TREEISH}"
+RUN git clone "${NGHTTP2_REMOTE:?}" ./
+RUN git checkout "${NGHTTP2_TREEISH:?}"
 RUN git submodule update --init --recursive
 RUN autoreconf -i && automake && autoconf
-RUN ./configure --prefix="${TMPPREFIX}" --enable-static --disable-shared --enable-lib-only
+RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared --enable-lib-only
 RUN make -j"$(nproc)"
 RUN make install
 
@@ -86,33 +86,33 @@ ARG QUICHE_TREEISH=master
 ARG QUICHE_REMOTE=https://github.com/cloudflare/quiche.git
 RUN mkdir /tmp/quiche/
 WORKDIR /tmp/quiche/
-RUN git clone "${QUICHE_REMOTE}" ./
-RUN git checkout "${QUICHE_TREEISH}"
+RUN git clone "${QUICHE_REMOTE:?}" ./
+RUN git checkout "${QUICHE_TREEISH:?}"
 RUN git submodule update --init --recursive
 RUN QUICHE_BSSL_PATH=/tmp/boringssl cargo build --release --features=pkg-config-meta
-RUN cp -a ./include/quiche.h "${TMPPREFIX}"/include/quiche.h
-RUN cp -a ./target/release/libquiche.a "${TMPPREFIX}"/lib/libquiche.a
-RUN cp -a ./target/release/quiche.pc "${TMPPREFIX}"/lib/pkgconfig/quiche.pc
-RUN sed -i "s|^\(includedir\)=.*$|\1=${TMPPREFIX}/include|g" "${TMPPREFIX}"/lib/pkgconfig/quiche.pc
-RUN sed -i "s|^\(libdir\)=.*$|\1=${TMPPREFIX}/lib|g" "${TMPPREFIX}"/lib/pkgconfig/quiche.pc
+RUN cp -a ./include/quiche.h "${TMPPREFIX:?}"/include/quiche.h
+RUN cp -a ./target/release/libquiche.a "${TMPPREFIX:?}"/lib/libquiche.a
+RUN cp -a ./target/release/quiche.pc "${TMPPREFIX:?}"/lib/pkgconfig/quiche.pc
+RUN sed -i "s|^\(includedir\)=.*$|\1=${TMPPREFIX:?}/include|g" "${TMPPREFIX:?}"/lib/pkgconfig/quiche.pc
+RUN sed -i "s|^\(libdir\)=.*$|\1=${TMPPREFIX:?}/lib|g" "${TMPPREFIX:?}"/lib/pkgconfig/quiche.pc
 
 # Build cURL
-ARG CURL_TREEISH=master
+ARG CURL_TREEISH=curl-7_66_0
 ARG CURL_REMOTE=https://github.com/curl/curl.git
 ARG CURL_TESTS=enabled
 RUN mkdir /tmp/curl/
 WORKDIR /tmp/curl/
-RUN git clone "${CURL_REMOTE}" ./
-RUN git checkout "${CURL_TREEISH}"
+RUN git clone "${CURL_REMOTE:?}" ./
+RUN git checkout "${CURL_TREEISH:?}"
 RUN git submodule update --init --recursive
 RUN ./buildconf
 RUN ./lib/mk-ca-bundle.pl ./ca-bundle.crt
-RUN ./configure --prefix="${TMPPREFIX}" --enable-static --disable-shared \
+RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared \
 		--with-ca-bundle=./ca-bundle.crt \
-		--with-zlib="${TMPPREFIX}" \
-		--with-ssl="${TMPPREFIX}" \
-		--with-nghttp2="${TMPPREFIX}" \
-		--with-quiche="${TMPPREFIX}"/lib/pkgconfig
+		--with-zlib="${TMPPREFIX:?}" \
+		--with-ssl="${TMPPREFIX:?}" \
+		--with-nghttp2="${TMPPREFIX:?}" \
+		--with-quiche="${TMPPREFIX:?}"/lib/pkgconfig
 RUN make -j"$(nproc)"
 RUN make install-strip
 
