@@ -12,6 +12,7 @@ RUN apk add --no-cache \
 		autoconf \
 		automake \
 		build-base \
+		coreutils \
 		curl \
 		git \
 		libtool \
@@ -26,9 +27,12 @@ RUN adduser -S -G "${GROUP:?}" "${USER:?}"
 USER "${USER}:${GROUP}"
 
 # Environment
-ENV CFLAGS='-O2 -fPIE -fstack-protector-strong -frandom-seed=42 -Wformat -Werror=format-security'
+ENV TMPPREFIX=/tmp/usr
+ENV CFLAGS='-O2 -fPIC -fPIE -fstack-protector-strong -frandom-seed=42 -Wformat -Werror=format-security'
+ENV CXXFLAGS=${CFLAGS}
 ENV CPPFLAGS='-Wdate-time -D_FORTIFY_SOURCE=2'
 ENV LDFLAGS='--static -Wl,-z,relro -Wl,-z,now'
+ENV PKG_CONFIG_PATH=${TMPPREFIX}/lib/pkgconfig
 ENV LC_ALL=C TZ=UTC SOURCE_DATE_EPOCH=1
 
 # Build zlib
@@ -39,7 +43,7 @@ WORKDIR /tmp/zlib/
 RUN git clone "${ZLIB_REMOTE:?}" ./
 RUN git checkout "${ZLIB_TREEISH:?}"
 RUN git submodule update --init --recursive
-RUN ./configure --prefix=/tmp/usr --static
+RUN ./configure --prefix="${TMPPREFIX:?}" --static
 RUN make -j"$(nproc)"
 RUN make install
 
@@ -51,7 +55,7 @@ WORKDIR /tmp/openssl/
 RUN git clone "${OPENSSL_REMOTE:?}" ./
 RUN git checkout "${OPENSSL_TREEISH:?}"
 RUN git submodule update --init --recursive
-RUN ./config --prefix=/tmp/usr no-shared no-engine
+RUN ./config --prefix="${TMPPREFIX:?}" no-shared no-engine
 RUN make build_libs OPENSSLDIR= ENGINESDIR= -j"$(nproc)"
 RUN make install_dev
 
@@ -64,7 +68,7 @@ RUN git clone "${NGHTTP2_REMOTE:?}" ./
 RUN git checkout "${NGHTTP2_TREEISH:?}"
 RUN git submodule update --init --recursive
 RUN autoreconf -i && automake && autoconf
-RUN ./configure --prefix=/tmp/usr --enable-static --disable-shared --enable-lib-only
+RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared --enable-lib-only
 RUN make -j"$(nproc)"
 RUN make install
 
@@ -79,11 +83,11 @@ RUN git checkout "${CURL_TREEISH:?}"
 RUN git submodule update --init --recursive
 RUN ./buildconf
 RUN ./lib/mk-ca-bundle.pl ./ca-bundle.crt
-RUN ./configure --prefix=/tmp/usr --enable-static --disable-shared \
+RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared \
 		--with-ca-bundle=./ca-bundle.crt \
-		--with-zlib=/tmp/usr \
-		--with-ssl=/tmp/usr \
-		--with-nghttp2=/tmp/usr
+		--with-zlib="${TMPPREFIX:?}" \
+		--with-ssl="${TMPPREFIX:?}" \
+		--with-nghttp2="${TMPPREFIX:?}"
 RUN make -j"$(nproc)"
 RUN make install-strip
 
