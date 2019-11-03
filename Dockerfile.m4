@@ -75,7 +75,6 @@ RUN make install
 # Build cURL
 ARG CURL_TREEISH=curl-7_66_0
 ARG CURL_REMOTE=https://github.com/curl/curl.git
-ARG CURL_TESTS=enabled
 RUN mkdir /tmp/curl/
 WORKDIR /tmp/curl/
 RUN git clone "${CURL_REMOTE:?}" ./
