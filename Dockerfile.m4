@@ -12,7 +12,6 @@ RUN apk add --no-cache \
 		autoconf \
 		automake \
 		build-base \
-		cargo \
 		cmake \
 		coreutils \
 		curl \
@@ -21,13 +20,12 @@ RUN apk add --no-cache \
 		libtool \
 		linux-headers \
 		perl \
-		pkgconf \
-		rust
+		pkgconf
 
 # Switch to unprivileged user
-ENV USER=builder GROUP=builder
+ENV USER=builder GROUP=builder HOME=/home/${USER}
 RUN addgroup -S "${GROUP:?}"
-RUN adduser -S -G "${GROUP:?}" "${USER:?}"
+RUN adduser -S -G "${GROUP:?}" "${USER:?}" -h "${HOME:?}"
 USER "${USER}:${GROUP}"
 
 # Environment
@@ -38,6 +36,10 @@ ENV CPPFLAGS='-Wdate-time -D_FORTIFY_SOURCE=2'
 ENV LDFLAGS='--static -Wl,-z,relro -Wl,-z,now'
 ENV PKG_CONFIG_PATH=${TMPPREFIX}/lib/pkgconfig
 ENV LC_ALL=C TZ=UTC SOURCE_DATE_EPOCH=1
+
+# Install Rust
+RUN curl --proto '=https' --tlsv1.2 -sSf 'https://sh.rustup.rs' | sh -s -- -y --default-toolchain 1.39.0
+ENV PATH=${HOME}/.cargo/bin:${PATH}
 
 # Build zlib
 ARG ZLIB_TREEISH=v1.2.11
@@ -51,22 +53,29 @@ RUN ./configure --prefix="${TMPPREFIX:?}" --static
 RUN make -j"$(nproc)"
 RUN make install
 
-# Build BoringSSL
-ARG BORINGSSL_TREEISH=master
-ARG BORINGSSL_REMOTE=https://boringssl.googlesource.com/boringssl.git
-RUN mkdir /tmp/boringssl/
-WORKDIR /tmp/boringssl/
-RUN git clone "${BORINGSSL_REMOTE:?}" ./
-RUN git checkout "${BORINGSSL_TREEISH:?}"
+# Build BoringSSL and Quiche
+ARG QUICHE_TREEISH=0.1.0
+ARG QUICHE_REMOTE=https://github.com/cloudflare/quiche.git
+RUN mkdir /tmp/quiche/
+WORKDIR /tmp/quiche/
+RUN git clone "${QUICHE_REMOTE:?}" ./
+RUN git checkout "${QUICHE_TREEISH:?}"
 RUN git submodule update --init --recursive
-RUN mkdir /tmp/boringssl/build/
-WORKDIR /tmp/boringssl/build/
+RUN mkdir /tmp/quiche/deps/boringssl/build/
+WORKDIR /tmp/quiche/deps/boringssl/build/
 RUN cmake ./ -D CMAKE_POSITION_INDEPENDENT_CODE=1 ../
 RUN make -j"$(nproc)"
 RUN cp -a ./crypto/libcrypto.a "${TMPPREFIX:?}"/lib/libcrypto.a
 RUN cp -a ./decrepit/libdecrepit.a "${TMPPREFIX:?}"/lib/libdecrepit.a
 RUN cp -a ./ssl/libssl.a "${TMPPREFIX:?}"/lib/libssl.a
 RUN cp -a ../include/openssl/ "${TMPPREFIX:?}"/include/openssl/
+WORKDIR /tmp/quiche/
+RUN QUICHE_BSSL_PATH="${PWD:?}"/deps/boringssl cargo build --release --features=pkg-config-meta
+RUN cp -a ./include/quiche.h "${TMPPREFIX:?}"/include/quiche.h
+RUN cp -a ./target/release/libquiche.a "${TMPPREFIX:?}"/lib/libquiche.a
+RUN cp -a ./target/release/quiche.pc "${TMPPREFIX:?}"/lib/pkgconfig/quiche.pc
+RUN sed -i "s|^\(includedir\)=.*$|\1=${TMPPREFIX:?}/include|g" "${TMPPREFIX:?}"/lib/pkgconfig/quiche.pc
+RUN sed -i "s|^\(libdir\)=.*$|\1=${TMPPREFIX:?}/lib|g" "${TMPPREFIX:?}"/lib/pkgconfig/quiche.pc
 
 # Build Nghttp2
 ARG NGHTTP2_TREEISH=v1.39.2
@@ -80,21 +89,6 @@ RUN autoreconf -i && automake && autoconf
 RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared --enable-lib-only
 RUN make -j"$(nproc)"
 RUN make install
-
-# Build Quiche
-ARG QUICHE_TREEISH=0.1.0
-ARG QUICHE_REMOTE=https://github.com/cloudflare/quiche.git
-RUN mkdir /tmp/quiche/
-WORKDIR /tmp/quiche/
-RUN git clone "${QUICHE_REMOTE:?}" ./
-RUN git checkout "${QUICHE_TREEISH:?}"
-RUN git submodule update --init --recursive
-RUN QUICHE_BSSL_PATH=/tmp/boringssl cargo build --release --features=pkg-config-meta
-RUN cp -a ./include/quiche.h "${TMPPREFIX:?}"/include/quiche.h
-RUN cp -a ./target/release/libquiche.a "${TMPPREFIX:?}"/lib/libquiche.a
-RUN cp -a ./target/release/quiche.pc "${TMPPREFIX:?}"/lib/pkgconfig/quiche.pc
-RUN sed -i "s|^\(includedir\)=.*$|\1=${TMPPREFIX:?}/include|g" "${TMPPREFIX:?}"/lib/pkgconfig/quiche.pc
-RUN sed -i "s|^\(libdir\)=.*$|\1=${TMPPREFIX:?}/lib|g" "${TMPPREFIX:?}"/lib/pkgconfig/quiche.pc
 
 # Build cURL
 ARG CURL_TREEISH=curl-7_67_0
