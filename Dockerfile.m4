@@ -109,6 +109,7 @@ RUN git submodule update --init --recursive
 RUN ./buildconf
 RUN ./lib/mk-ca-bundle.pl ./ca-bundle.crt
 RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared \
+		--enable-alt-svc \
 		--with-ca-bundle=./ca-bundle.crt \
 		--with-zlib="${TMPPREFIX:?}" \
 		--with-ssl="${TMPPREFIX:?}" \
