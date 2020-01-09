@@ -48,7 +48,7 @@ RUN make -j"$(nproc)"
 RUN make install
 
 # Build OpenSSL
-ARG OPENSSL_TREEISH=openssl-quic-draft-23
+ARG OPENSSL_TREEISH=OpenSSL_1_1_1d-quic-draft-24
 ARG OPENSSL_REMOTE=https://github.com/tatsuhiro-t/openssl.git
 RUN mkdir /tmp/openssl/
 WORKDIR /tmp/openssl/
@@ -73,7 +73,7 @@ RUN make -j"$(nproc)"
 RUN make install
 
 # Build Ngtcp2
-ARG NGTCP2_TREEISH=draft-23
+ARG NGTCP2_TREEISH=master
 ARG NGTCP2_REMOTE=https://github.com/ngtcp2/ngtcp2.git
 RUN mkdir /tmp/ngtcp2/
 WORKDIR /tmp/ngtcp2/
@@ -86,7 +86,7 @@ RUN make -j"$(nproc)"
 RUN make install
 
 # Build Nghttp3
-ARG NGHTTP3_TREEISH=draft-23
+ARG NGHTTP3_TREEISH=master
 ARG NGHTTP3_REMOTE=https://github.com/ngtcp2/nghttp3.git
 RUN mkdir /tmp/nghttp3/
 WORKDIR /tmp/nghttp3/
