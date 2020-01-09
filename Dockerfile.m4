@@ -138,7 +138,7 @@ m4_ifdef([[CROSS_QEMU]], [[COPY --from=docker.io/hectormolinero/qemu-user-static
 
 RUN ["/curl", "--version"]
 RUN ["/curl", "--verbose", "--silent", "https://cloudflare.com"]
-RUN ["/curl", "--verbose", "--silent", "--http2-prior-knowledge", "--tlsv1.3", "https://cloudflare.com"]
+RUN ["/curl", "--verbose", "--silent", "--http2-prior-knowledge", "--tlsv1.2", "https://cloudflare.com"]
 RUN ["/curl", "--verbose", "--silent", "--doh-url", "https://1.1.1.1/dns-query", "https://cloudflare.com"]
 RUN ["/curl", "--verbose", "--silent", "--http3", "https://quic.tech:8443"]
 
