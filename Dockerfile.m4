@@ -16,7 +16,8 @@ RUN apk add --no-cache \
 		coreutils \
 		curl \
 		git \
-		go \
+		jq \
+		libc6-compat \
 		libtool \
 		linux-headers \
 		perl \
@@ -40,6 +41,15 @@ ENV LC_ALL=C TZ=UTC SOURCE_DATE_EPOCH=1
 # Install Rust
 RUN curl --proto '=https' --tlsv1.2 -sSf 'https://sh.rustup.rs' | sh -s -- -y
 ENV PATH=${HOME}/.cargo/bin:${PATH}
+
+# Install Go
+ENV GOROOT=${HOME}/.goroot/ GOPATH=${HOME}/.gopath/
+RUN mkdir -p "${GOROOT:?}" "${GOPATH:?}/bin" "${GOPATH:?}/src"
+RUN GOLANG_VERSION=$(curl -sSLf 'https://golang.org/dl/?mode=json' | jq -r 'map(select(.version | startswith("go1."))) | first | .version') \
+	&& case "$(uname -m)" in x86_64) GOLANG_ARCH=amd64 ;; aarch64) GOLANG_ARCH=arm64 ;; armv6l|armv7l) GOLANG_ARCH=armv6l ;; esac \
+	&& GOLANG_PKG_URL=https://dl.google.com/go/${GOLANG_VERSION:?}.linux-${GOLANG_ARCH:?}.tar.gz \
+	&& curl -sSLf "${GOLANG_PKG_URL:?}" | tar -xz --strip-components=1 -C "${GOROOT:?}"
+ENV PATH=${GOROOT}/bin:${GOPATH}/bin:${PATH}
 
 # Build zlib
 ARG ZLIB_TREEISH=v1.2.11
