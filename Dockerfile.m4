@@ -54,7 +54,7 @@ RUN make -j"$(nproc)"
 RUN make install
 
 # Build BoringSSL and Quiche
-ARG QUICHE_TREEISH=0.1.0
+ARG QUICHE_TREEISH=0.2.0
 ARG QUICHE_REMOTE=https://github.com/cloudflare/quiche.git
 RUN mkdir /tmp/quiche/
 WORKDIR /tmp/quiche/
