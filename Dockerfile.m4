@@ -38,7 +38,7 @@ ENV PKG_CONFIG_PATH=${TMPPREFIX}/lib/pkgconfig
 ENV LC_ALL=C TZ=UTC SOURCE_DATE_EPOCH=1
 
 # Install Rust
-RUN curl --proto '=https' --tlsv1.2 -sSf 'https://sh.rustup.rs' | sh -s -- -y --default-toolchain 1.39.0
+RUN curl --proto '=https' --tlsv1.2 -sSf 'https://sh.rustup.rs' | sh -s -- -y
 ENV PATH=${HOME}/.cargo/bin:${PATH}
 
 # Build zlib
