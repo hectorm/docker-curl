@@ -64,7 +64,7 @@ RUN make -j"$(nproc)"
 RUN make install
 
 # Build BoringSSL and Quiche
-ARG QUICHE_TREEISH=0.2.0
+ARG QUICHE_TREEISH=master
 ARG QUICHE_REMOTE=https://github.com/cloudflare/quiche.git
 RUN mkdir /tmp/quiche/
 WORKDIR /tmp/quiche/
@@ -101,7 +101,7 @@ RUN make -j"$(nproc)"
 RUN make install
 
 # Build cURL
-ARG CURL_TREEISH=curl-7_68_0
+ARG CURL_TREEISH=master
 ARG CURL_REMOTE=https://github.com/curl/curl.git
 RUN mkdir /tmp/curl/
 WORKDIR /tmp/curl/
