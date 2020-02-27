@@ -98,6 +98,19 @@ RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared --ena
 RUN make -j"$(nproc)"
 RUN make install
 
+# Build libssh2
+ARG LIBSSH2_TREEISH=libssh2-1.9.0
+ARG LIBSSH2_REMOTE=https://github.com/libssh2/libssh2.git
+RUN mkdir /tmp/libssh2/
+WORKDIR /tmp/libssh2/
+RUN git clone "${LIBSSH2_REMOTE:?}" ./
+RUN git checkout "${LIBSSH2_TREEISH:?}"
+RUN git submodule update --init --recursive
+RUN ./buildconf
+RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared
+RUN make -j"$(nproc)"
+RUN make install
+
 # Build cURL
 ARG CURL_TREEISH=master
 ARG CURL_REMOTE=https://github.com/curl/curl.git
@@ -114,7 +127,8 @@ RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared \
 		--with-zlib="${TMPPREFIX:?}" \
 		--with-ssl="${TMPPREFIX:?}" \
 		--with-nghttp2="${TMPPREFIX:?}" \
-		--with-ngtcp2="${TMPPREFIX:?}"
+		--with-ngtcp2="${TMPPREFIX:?}" \
+		--with-libssh2="${TMPPREFIX:?}"
 RUN make -j"$(nproc)"
 RUN make install-strip
 
