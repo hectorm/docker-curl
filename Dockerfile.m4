@@ -149,10 +149,10 @@ FROM base AS test
 m4_ifdef([[CROSS_QEMU]], [[COPY --from=docker.io/hectormolinero/qemu-user-static:latest CROSS_QEMU CROSS_QEMU]])
 
 RUN ["/curl", "--version"]
-RUN ["/curl", "--verbose", "--silent", "https://cloudflare.com"]
-RUN ["/curl", "--verbose", "--silent", "--http2-prior-knowledge", "--tlsv1.3", "https://cloudflare.com"]
-RUN ["/curl", "--verbose", "--silent", "--doh-url", "https://1.1.1.1/dns-query", "https://cloudflare.com"]
-RUN ["/curl", "--verbose", "--silent", "--http3", "https://quic.tech:8443"]
+RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "https://cloudflare.com"]
+RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--http2-prior-knowledge", "--tlsv1.3", "https://cloudflare.com"]
+RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--doh-url", "https://1.1.1.1/dns-query", "https://cloudflare.com"]
+RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--http3", "https://quic.tech:8443"]
 
 ##################################################
 ## "curl" stage
