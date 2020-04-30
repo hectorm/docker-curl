@@ -14,6 +14,7 @@ RUN apk add --no-cache \
 		build-base \
 		coreutils \
 		curl \
+		findutils \
 		git \
 		libtool \
 		linux-headers \
