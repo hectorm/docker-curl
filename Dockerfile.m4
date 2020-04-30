@@ -15,6 +15,7 @@ RUN apk add --no-cache \
 		cmake \
 		coreutils \
 		curl \
+		findutils \
 		git \
 		jq \
 		libc6-compat \
