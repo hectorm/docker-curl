@@ -61,7 +61,7 @@ RUN make build_libs OPENSSLDIR= ENGINESDIR= -j"$(nproc)"
 RUN make install_dev
 
 # Build Nghttp2
-ARG NGHTTP2_TREEISH=v1.40.0
+ARG NGHTTP2_TREEISH=v1.41.0
 ARG NGHTTP2_REMOTE=https://github.com/nghttp2/nghttp2.git
 RUN mkdir /tmp/nghttp2/
 WORKDIR /tmp/nghttp2/
@@ -113,7 +113,7 @@ RUN make -j"$(nproc)"
 RUN make install
 
 # Build cURL
-ARG CURL_TREEISH=curl-7_70_0
+ARG CURL_TREEISH=curl-7_71_0
 ARG CURL_REMOTE=https://github.com/curl/curl.git
 RUN mkdir /tmp/curl/
 WORKDIR /tmp/curl/
