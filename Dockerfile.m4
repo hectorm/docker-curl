@@ -48,6 +48,17 @@ RUN ./configure --prefix="${TMPPREFIX:?}" --static
 RUN make -j"$(nproc)"
 RUN make install
 
+# Build zstd
+ARG ZSTD_TREEISH=v1.4.5
+ARG ZSTD_REMOTE=https://github.com/facebook/zstd.git
+RUN mkdir /tmp/zstd/
+WORKDIR /tmp/zstd/
+RUN git clone "${ZSTD_REMOTE:?}" ./
+RUN git checkout "${ZSTD_TREEISH:?}"
+RUN git submodule update --init --recursive
+RUN make -j"$(nproc)"
+RUN make install PREFIX="${TMPPREFIX:?}"
+
 # Build OpenSSL
 ARG OPENSSL_TREEISH=OpenSSL_1_1_1g-quic-draft-29
 ARG OPENSSL_REMOTE=https://github.com/tatsuhiro-t/openssl.git
@@ -113,7 +124,7 @@ RUN make -j"$(nproc)"
 RUN make install
 
 # Build cURL
-ARG CURL_TREEISH=curl-7_71_1
+ARG CURL_TREEISH=curl-7_72_0
 ARG CURL_REMOTE=https://github.com/curl/curl.git
 RUN mkdir /tmp/curl/
 WORKDIR /tmp/curl/
@@ -126,6 +137,7 @@ RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared \
 		--enable-alt-svc \
 		--with-ca-bundle=./ca-bundle.crt \
 		--with-zlib="${TMPPREFIX:?}" \
+		--with-zstd="${TMPPREFIX:?}" \
 		--with-ssl="${TMPPREFIX:?}" \
 		--with-nghttp2="${TMPPREFIX:?}" \
 		--with-ngtcp2="${TMPPREFIX:?}" \
