@@ -21,7 +21,6 @@ RUN apk add --no-cache \
 		libc6-compat \
 		libtool \
 		linux-headers \
-		perl \
 		pkgconf
 
 # Switch to unprivileged user
@@ -42,15 +41,6 @@ ENV LC_ALL=C TZ=UTC SOURCE_DATE_EPOCH=1
 # Install Rust
 RUN curl --proto '=https' --tlsv1.2 -sSf 'https://sh.rustup.rs' | sh -s -- -y
 ENV PATH=${HOME}/.cargo/bin:${PATH}
-
-# Install Go
-ENV GOROOT=${HOME}/.goroot/ GOPATH=${HOME}/.gopath/
-RUN mkdir -p "${GOROOT:?}" "${GOPATH:?}/bin" "${GOPATH:?}/src"
-RUN GOLANG_VERSION=$(curl -sSLf 'https://golang.org/dl/?mode=json' | jq -r 'map(select(.version | startswith("go1."))) | first | .version') \
-	&& case "$(uname -m)" in x86_64) GOLANG_ARCH=amd64 ;; aarch64) GOLANG_ARCH=arm64 ;; armv6l|armv7l) GOLANG_ARCH=armv6l ;; esac \
-	&& GOLANG_PKG_URL=https://dl.google.com/go/${GOLANG_VERSION:?}.linux-${GOLANG_ARCH:?}.tar.gz \
-	&& curl -sSLf "${GOLANG_PKG_URL:?}" | tar -xz --strip-components=1 -C "${GOROOT:?}"
-ENV PATH=${GOROOT}/bin:${GOPATH}/bin:${PATH}
 
 # Build zlib
 ARG ZLIB_TREEISH=v1.2.11
@@ -87,10 +77,9 @@ RUN mkdir /tmp/quiche/deps/boringssl/build/
 WORKDIR /tmp/quiche/deps/boringssl/build/
 RUN cmake ./ -D CMAKE_POSITION_INDEPENDENT_CODE=1 ../
 RUN make -j"$(nproc)"
-RUN cp -a ./crypto/libcrypto.a "${TMPPREFIX:?}"/lib/libcrypto.a
-RUN cp -a ./decrepit/libdecrepit.a "${TMPPREFIX:?}"/lib/libdecrepit.a
-RUN cp -a ./ssl/libssl.a "${TMPPREFIX:?}"/lib/libssl.a
-RUN cp -a ../include/openssl/ "${TMPPREFIX:?}"/include/openssl/
+RUN cp -a ./libcrypto.a "${TMPPREFIX:?}"/lib/libcrypto.a
+RUN cp -a ./libssl.a "${TMPPREFIX:?}"/lib/libssl.a
+RUN cp -a ../src/include/openssl/ "${TMPPREFIX:?}"/include/openssl/
 WORKDIR /tmp/quiche/
 RUN QUICHE_BSSL_PATH="${PWD:?}"/deps/boringssl cargo build --release --features=pkg-config-meta
 RUN cp -a ./include/quiche.h "${TMPPREFIX:?}"/include/quiche.h
