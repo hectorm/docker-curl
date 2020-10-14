@@ -60,7 +60,7 @@ RUN make -j"$(nproc)"
 RUN make install PREFIX="${TMPPREFIX:?}"
 
 # Build OpenSSL
-ARG OPENSSL_TREEISH=OpenSSL_1_1_1g-quic-draft-29
+ARG OPENSSL_TREEISH=OpenSSL_1_1_1g-quic-draft-31
 ARG OPENSSL_REMOTE=https://github.com/tatsuhiro-t/openssl.git
 RUN mkdir /tmp/openssl/
 WORKDIR /tmp/openssl/
@@ -124,7 +124,7 @@ RUN make -j"$(nproc)"
 RUN make install
 
 # Build cURL
-ARG CURL_TREEISH=curl-7_72_0
+ARG CURL_TREEISH=curl-7_73_0
 ARG CURL_REMOTE=https://github.com/curl/curl.git
 RUN mkdir /tmp/curl/
 WORKDIR /tmp/curl/
