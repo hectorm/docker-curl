@@ -72,7 +72,7 @@ RUN make build_libs OPENSSLDIR= ENGINESDIR= -j"$(nproc)"
 RUN make install_dev
 
 # Build Nghttp2
-ARG NGHTTP2_TREEISH=v1.41.0
+ARG NGHTTP2_TREEISH=v1.42.0
 ARG NGHTTP2_REMOTE=https://github.com/nghttp2/nghttp2.git
 RUN mkdir /tmp/nghttp2/
 WORKDIR /tmp/nghttp2/
