@@ -29,7 +29,7 @@ USER "${USER}:${GROUP}"
 
 # Environment
 ENV TMPPREFIX=/tmp/usr
-ENV CFLAGS='-O2 -fPIC -fPIE -fstack-protector-strong -frandom-seed=42 -Wformat -Werror=format-security'
+ENV CFLAGS='-O2 -fstack-protector-strong -frandom-seed=42 -Wformat -Werror=format-security'
 ENV CXXFLAGS=${CFLAGS}
 ENV CPPFLAGS='-Wdate-time -D_FORTIFY_SOURCE=2'
 ENV LDFLAGS='--static -Wl,-z,relro -Wl,-z,now'
