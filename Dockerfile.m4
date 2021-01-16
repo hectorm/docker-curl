@@ -62,7 +62,7 @@ RUN make libzstd.a-release -j"$(nproc)"
 RUN make install-pc install-static install-includes PREFIX="${TMPPREFIX:?}"
 
 # Build OpenSSL
-ARG OPENSSL_TREEISH=OpenSSL_1_1_1g-quic-draft-31
+ARG OPENSSL_TREEISH=OpenSSL_1_1_1g-quic-draft-33
 ARG OPENSSL_REMOTE=https://github.com/tatsuhiro-t/openssl.git
 RUN mkdir /tmp/openssl/
 WORKDIR /tmp/openssl/
@@ -126,7 +126,7 @@ RUN make -j"$(nproc)"
 RUN make install
 
 # Build cURL
-ARG CURL_TREEISH=curl-7_74_0
+ARG CURL_TREEISH=master
 ARG CURL_REMOTE=https://github.com/curl/curl.git
 RUN mkdir /tmp/curl/
 WORKDIR /tmp/curl/
@@ -143,6 +143,7 @@ RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared \
 		--with-ssl="${TMPPREFIX:?}" \
 		--with-nghttp2="${TMPPREFIX:?}" \
 		--with-ngtcp2="${TMPPREFIX:?}" \
+		--with-nghttp3="${TMPPREFIX:?}" \
 		--with-libssh2="${TMPPREFIX:?}" \
 		LDFLAGS="--static ${LDFLAGS-}"
 RUN make -j"$(nproc)"
