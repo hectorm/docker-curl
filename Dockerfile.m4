@@ -57,8 +57,9 @@ WORKDIR /tmp/zstd/
 RUN git clone "${ZSTD_REMOTE:?}" ./
 RUN git checkout "${ZSTD_TREEISH:?}"
 RUN git submodule update --init --recursive
-RUN make -j"$(nproc)"
-RUN make install PREFIX="${TMPPREFIX:?}"
+WORKDIR /tmp/zstd/lib/
+RUN make libzstd.a-release -j"$(nproc)"
+RUN make install-pc install-static install-includes PREFIX="${TMPPREFIX:?}"
 
 # Build OpenSSL
 ARG OPENSSL_TREEISH=OpenSSL_1_1_1i
