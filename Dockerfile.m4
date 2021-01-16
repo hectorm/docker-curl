@@ -30,9 +30,10 @@ USER "${USER}:${GROUP}"
 # Environment
 ENV TMPPREFIX=/tmp/usr
 ENV CFLAGS='-O2 -fstack-protector-strong -frandom-seed=42 -Wformat -Werror=format-security'
+m4_ifelse(CROSS_ARCH, amd64, [[ENV CFLAGS="${CFLAGS} -fstack-clash-protection -fcf-protection=full"]])
 ENV CXXFLAGS=${CFLAGS}
 ENV CPPFLAGS='-Wdate-time -D_FORTIFY_SOURCE=2'
-ENV LDFLAGS='--static -Wl,-z,relro -Wl,-z,now'
+ENV LDFLAGS='-static -Wl,-z,defs -Wl,-z,relro -Wl,-z,now -Wl,-z,noexecstack'
 ENV PKG_CONFIG_PATH=${TMPPREFIX}/lib/pkgconfig
 ENV LC_ALL=C TZ=UTC SOURCE_DATE_EPOCH=1
 
