@@ -29,10 +29,11 @@ USER "${USER}:${GROUP}"
 
 # Environment
 ENV TMPPREFIX=/tmp/usr
-ENV CFLAGS='-O2 -fPIC -fPIE -fstack-protector-strong -frandom-seed=42 -Wformat -Werror=format-security'
+ENV CFLAGS='-O2 -fstack-protector-strong -frandom-seed=42 -Wformat -Werror=format-security'
+m4_ifelse(CROSS_ARCH, amd64, [[ENV CFLAGS="${CFLAGS} -fstack-clash-protection -fcf-protection=full"]])
 ENV CXXFLAGS=${CFLAGS}
 ENV CPPFLAGS='-Wdate-time -D_FORTIFY_SOURCE=2'
-ENV LDFLAGS='--static -Wl,-z,relro -Wl,-z,now'
+ENV LDFLAGS='-static -Wl,-z,defs -Wl,-z,relro -Wl,-z,now -Wl,-z,noexecstack'
 ENV PKG_CONFIG_PATH=${TMPPREFIX}/lib/pkgconfig
 ENV LC_ALL=C TZ=UTC SOURCE_DATE_EPOCH=1
 
@@ -49,15 +50,16 @@ RUN make -j"$(nproc)"
 RUN make install
 
 # Build zstd
-ARG ZSTD_TREEISH=v1.4.5
+ARG ZSTD_TREEISH=v1.4.8
 ARG ZSTD_REMOTE=https://github.com/facebook/zstd.git
 RUN mkdir /tmp/zstd/
 WORKDIR /tmp/zstd/
 RUN git clone "${ZSTD_REMOTE:?}" ./
 RUN git checkout "${ZSTD_TREEISH:?}"
 RUN git submodule update --init --recursive
-RUN make -j"$(nproc)"
-RUN make install PREFIX="${TMPPREFIX:?}"
+WORKDIR /tmp/zstd/lib/
+RUN make libzstd.a-release -j"$(nproc)"
+RUN make install-pc install-static install-includes PREFIX="${TMPPREFIX:?}"
 
 # Build OpenSSL
 ARG OPENSSL_TREEISH=OpenSSL_1_1_1g-quic-draft-31
@@ -79,7 +81,7 @@ WORKDIR /tmp/nghttp2/
 RUN git clone "${NGHTTP2_REMOTE:?}" ./
 RUN git checkout "${NGHTTP2_TREEISH:?}"
 RUN git submodule update --init --recursive
-RUN autoreconf -i && automake && autoconf
+RUN autoreconf -fi && automake && autoconf
 RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared --enable-lib-only
 RUN make -j"$(nproc)"
 RUN make install
@@ -92,7 +94,7 @@ WORKDIR /tmp/ngtcp2/
 RUN git clone "${NGTCP2_REMOTE:?}" ./
 RUN git checkout "${NGTCP2_TREEISH:?}"
 RUN git submodule update --init --recursive
-RUN autoreconf -i && automake && autoconf
+RUN autoreconf -fi && automake && autoconf
 RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared
 RUN make -j"$(nproc)"
 RUN make install
@@ -105,7 +107,7 @@ WORKDIR /tmp/nghttp3/
 RUN git clone "${NGHTTP3_REMOTE:?}" ./
 RUN git checkout "${NGHTTP3_TREEISH:?}"
 RUN git submodule update --init --recursive
-RUN autoreconf -i && automake && autoconf
+RUN autoreconf -fi && automake && autoconf
 RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared --enable-lib-only
 RUN make -j"$(nproc)"
 RUN make install
@@ -124,14 +126,14 @@ RUN make -j"$(nproc)"
 RUN make install
 
 # Build cURL
-ARG CURL_TREEISH=curl-7_73_0
+ARG CURL_TREEISH=curl-7_74_0
 ARG CURL_REMOTE=https://github.com/curl/curl.git
 RUN mkdir /tmp/curl/
 WORKDIR /tmp/curl/
 RUN git clone "${CURL_REMOTE:?}" ./
 RUN git checkout "${CURL_TREEISH:?}"
 RUN git submodule update --init --recursive
-RUN ./buildconf
+RUN autoreconf -fi && automake && autoconf
 RUN ./lib/mk-ca-bundle.pl ./ca-bundle.crt
 RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared \
 		--enable-alt-svc \
@@ -141,7 +143,8 @@ RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared \
 		--with-ssl="${TMPPREFIX:?}" \
 		--with-nghttp2="${TMPPREFIX:?}" \
 		--with-ngtcp2="${TMPPREFIX:?}" \
-		--with-libssh2="${TMPPREFIX:?}"
+		--with-libssh2="${TMPPREFIX:?}" \
+		LDFLAGS="--static ${LDFLAGS-}"
 RUN make -j"$(nproc)"
 RUN make install-strip
 
