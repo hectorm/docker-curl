@@ -80,7 +80,7 @@ WORKDIR /tmp/nghttp2/
 RUN git clone "${NGHTTP2_REMOTE:?}" ./
 RUN git checkout "${NGHTTP2_TREEISH:?}"
 RUN git submodule update --init --recursive
-RUN autoreconf -i && automake && autoconf
+RUN autoreconf -fi && automake && autoconf
 RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared --enable-lib-only
 RUN make -j"$(nproc)"
 RUN make install
@@ -106,7 +106,7 @@ WORKDIR /tmp/curl/
 RUN git clone "${CURL_REMOTE:?}" ./
 RUN git checkout "${CURL_TREEISH:?}"
 RUN git submodule update --init --recursive
-RUN ./buildconf
+RUN autoreconf -fi && automake && autoconf
 RUN ./lib/mk-ca-bundle.pl ./ca-bundle.crt
 RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared \
 		--with-ca-bundle=./ca-bundle.crt \
@@ -114,7 +114,8 @@ RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared \
 		--with-zstd="${TMPPREFIX:?}" \
 		--with-ssl="${TMPPREFIX:?}" \
 		--with-nghttp2="${TMPPREFIX:?}" \
-		--with-libssh2="${TMPPREFIX:?}"
+		--with-libssh2="${TMPPREFIX:?}" \
+		LDFLAGS="--static ${LDFLAGS-}"
 RUN make -j"$(nproc)"
 RUN make install-strip
 
