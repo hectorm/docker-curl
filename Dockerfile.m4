@@ -91,7 +91,7 @@ RUN sed -i "s|^\(includedir\)=.*$|\1=${TMPPREFIX:?}/include|g" "${TMPPREFIX:?}"/
 RUN sed -i "s|^\(libdir\)=.*$|\1=${TMPPREFIX:?}/lib|g" "${TMPPREFIX:?}"/lib/pkgconfig/quiche.pc
 
 # Build Nghttp2
-ARG NGHTTP2_TREEISH=v1.42.0
+ARG NGHTTP2_TREEISH=v1.43.0
 ARG NGHTTP2_REMOTE=https://github.com/nghttp2/nghttp2.git
 RUN mkdir /tmp/nghttp2/
 WORKDIR /tmp/nghttp2/
