@@ -62,8 +62,8 @@ RUN make libzstd.a-release -j"$(nproc)"
 RUN make install-pc install-static install-includes PREFIX="${TMPPREFIX:?}"
 
 # Build OpenSSL
-ARG OPENSSL_TREEISH=OpenSSL_1_1_1g-quic-draft-33
-ARG OPENSSL_REMOTE=https://github.com/tatsuhiro-t/openssl.git
+ARG OPENSSL_TREEISH=OpenSSL_1_1_1k+quic
+ARG OPENSSL_REMOTE=https://github.com/quictls/openssl.git
 RUN mkdir /tmp/openssl/
 WORKDIR /tmp/openssl/
 RUN git clone "${OPENSSL_REMOTE:?}" ./
@@ -169,7 +169,7 @@ RUN ["/curl", "--version"]
 RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "https://cloudflare.com"]
 RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--http2-prior-knowledge", "--tlsv1.3", "https://cloudflare.com"]
 RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--doh-url", "https://1.1.1.1/dns-query", "https://cloudflare.com"]
-RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--http3", "https://quic.tech:8443"]
+RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--http3", "https://cloudflare-quic.com"]
 
 ##################################################
 ## "curl" stage
