@@ -31,7 +31,7 @@ USER "${USER}:${GROUP}"
 
 # Environment
 ENV TMPPREFIX=/tmp/usr
-ENV CFLAGS='-O2 -fstack-protector-strong -frandom-seed=42 -Wformat -Werror=format-security'
+ENV CFLAGS='-O2 -fstack-protector-strong -frandom-seed=42 -Wformat -Werror=format-security -Wl,-allow-multiple-definition'
 m4_ifelse(CROSS_ARCH, amd64, [[ENV CFLAGS="${CFLAGS} -fstack-clash-protection -fcf-protection=full"]])
 ENV CXXFLAGS=${CFLAGS}
 ENV CPPFLAGS='-Wdate-time -D_FORTIFY_SOURCE=2'
@@ -68,7 +68,7 @@ RUN make libzstd.a-release -j"$(nproc)"
 RUN make install-pc install-static install-includes PREFIX="${TMPPREFIX:?}"
 
 # Build BoringSSL and Quiche
-ARG QUICHE_TREEISH=master
+ARG QUICHE_TREEISH=0.8.1
 ARG QUICHE_REMOTE=https://github.com/cloudflare/quiche.git
 RUN mkdir /tmp/quiche/
 WORKDIR /tmp/quiche/
@@ -83,7 +83,7 @@ RUN cp -a ./libcrypto.a "${TMPPREFIX:?}"/lib/libcrypto.a
 RUN cp -a ./libssl.a "${TMPPREFIX:?}"/lib/libssl.a
 RUN cp -a ../src/include/openssl/ "${TMPPREFIX:?}"/include/openssl/
 WORKDIR /tmp/quiche/
-RUN QUICHE_BSSL_PATH="${PWD:?}"/deps/boringssl cargo build --release --features=pkg-config-meta
+RUN QUICHE_BSSL_PATH="${PWD:?}"/deps/boringssl cargo build --release --features=ffi,pkg-config-meta,qlog
 RUN cp -a ./include/quiche.h "${TMPPREFIX:?}"/include/quiche.h
 RUN cp -a ./target/release/libquiche.a "${TMPPREFIX:?}"/lib/libquiche.a
 RUN cp -a ./target/release/quiche.pc "${TMPPREFIX:?}"/lib/pkgconfig/quiche.pc
@@ -114,7 +114,6 @@ RUN git submodule update --init --recursive
 RUN autoreconf -fi && automake && autoconf
 RUN ./lib/mk-ca-bundle.pl ./ca-bundle.crt
 RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared \
-		--enable-alt-svc \
 		--with-ca-bundle=./ca-bundle.crt \
 		--with-zlib="${TMPPREFIX:?}" \
 		--with-zstd="${TMPPREFIX:?}" \
@@ -145,7 +144,7 @@ RUN ["/curl", "--version"]
 RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "https://cloudflare.com"]
 RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--http2-prior-knowledge", "--tlsv1.2", "https://cloudflare.com"]
 RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--doh-url", "https://1.1.1.1/dns-query", "https://cloudflare.com"]
-RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--http3", "https://quic.tech:8443"]
+RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--http3", "https://cloudflare-quic.com"]
 
 ##################################################
 ## "curl" stage
