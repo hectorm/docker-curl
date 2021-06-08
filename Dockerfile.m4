@@ -126,7 +126,7 @@ RUN make -j"$(nproc)"
 RUN make install
 
 # Build cURL
-ARG CURL_TREEISH=curl-7_76_1
+ARG CURL_TREEISH=curl-7_77_0
 ARG CURL_REMOTE=https://github.com/curl/curl.git
 RUN mkdir /tmp/curl/
 WORKDIR /tmp/curl/
@@ -140,7 +140,7 @@ RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared \
 		--with-ca-bundle=./ca-bundle.crt \
 		--with-zlib="${TMPPREFIX:?}" \
 		--with-zstd="${TMPPREFIX:?}" \
-		--with-ssl="${TMPPREFIX:?}" \
+		--with-openssl="${TMPPREFIX:?}" \
 		--with-nghttp2="${TMPPREFIX:?}" \
 		--with-ngtcp2="${TMPPREFIX:?}" \
 		--with-nghttp3="${TMPPREFIX:?}" \
