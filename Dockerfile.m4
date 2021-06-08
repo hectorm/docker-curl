@@ -68,7 +68,7 @@ RUN make libzstd.a-release -j"$(nproc)"
 RUN make install-pc install-static install-includes PREFIX="${TMPPREFIX:?}"
 
 # Build BoringSSL and Quiche
-ARG QUICHE_TREEISH=0.8.1
+ARG QUICHE_TREEISH=0.9.0
 ARG QUICHE_REMOTE=https://github.com/cloudflare/quiche.git
 RUN mkdir /tmp/quiche/
 WORKDIR /tmp/quiche/
