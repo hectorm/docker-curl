@@ -74,7 +74,7 @@ RUN make build_libs OPENSSLDIR= ENGINESDIR= -j"$(nproc)"
 RUN make install_dev
 
 # Build Nghttp2
-ARG NGHTTP2_TREEISH=v1.43.0
+ARG NGHTTP2_TREEISH=v1.44.0
 ARG NGHTTP2_REMOTE=https://github.com/nghttp2/nghttp2.git
 RUN mkdir /tmp/nghttp2/
 WORKDIR /tmp/nghttp2/
@@ -120,13 +120,15 @@ WORKDIR /tmp/libssh2/
 RUN git clone "${LIBSSH2_REMOTE:?}" ./
 RUN git checkout "${LIBSSH2_TREEISH:?}"
 RUN git submodule update --init --recursive
+# TODO: Remove when libssh2/libssh2#594 arrives to a stable version
+RUN sed -ri '/m4_undefine\(\[backend\]\)/d' ./configure.ac
 RUN ./buildconf
 RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared
 RUN make -j"$(nproc)"
 RUN make install
 
 # Build cURL
-ARG CURL_TREEISH=curl-7_77_0
+ARG CURL_TREEISH=curl-7_78_0
 ARG CURL_REMOTE=https://github.com/curl/curl.git
 RUN mkdir /tmp/curl/
 WORKDIR /tmp/curl/
