@@ -62,7 +62,7 @@ RUN make libzstd.a-release -j"$(nproc)"
 RUN make install-pc install-static install-includes PREFIX="${TMPPREFIX:?}"
 
 # Build OpenSSL
-ARG OPENSSL_TREEISH=OpenSSL_1_1_1k+quic
+ARG OPENSSL_TREEISH=OpenSSL_1_1_1l+quic
 ARG OPENSSL_REMOTE=https://github.com/quictls/openssl.git
 RUN mkdir /tmp/openssl/
 WORKDIR /tmp/openssl/
@@ -113,7 +113,7 @@ RUN make -j"$(nproc)"
 RUN make install
 
 # Build libssh2
-ARG LIBSSH2_TREEISH=libssh2-1.9.0
+ARG LIBSSH2_TREEISH=libssh2-1.10.0
 ARG LIBSSH2_REMOTE=https://github.com/libssh2/libssh2.git
 RUN mkdir /tmp/libssh2/
 WORKDIR /tmp/libssh2/
