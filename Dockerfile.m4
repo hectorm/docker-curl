@@ -62,14 +62,14 @@ RUN make libzstd.a-release -j"$(nproc)"
 RUN make install-pc install-static install-includes PREFIX="${TMPPREFIX:?}"
 
 # Build OpenSSL
-ARG OPENSSL_TREEISH=OpenSSL_1_1_1l+quic
+ARG OPENSSL_TREEISH=openssl-3.0.0+quic
 ARG OPENSSL_REMOTE=https://github.com/quictls/openssl.git
 RUN mkdir /tmp/openssl/
 WORKDIR /tmp/openssl/
 RUN git clone "${OPENSSL_REMOTE:?}" ./
 RUN git checkout "${OPENSSL_TREEISH:?}"
 RUN git submodule update --init --recursive
-RUN ./config --prefix="${TMPPREFIX:?}" no-shared no-engine
+RUN ./config --prefix="${TMPPREFIX:?}" --libdir=lib no-shared no-engine
 RUN make build_libs OPENSSLDIR= ENGINESDIR= -j"$(nproc)"
 RUN make install_dev
 
@@ -120,8 +120,6 @@ WORKDIR /tmp/libssh2/
 RUN git clone "${LIBSSH2_REMOTE:?}" ./
 RUN git checkout "${LIBSSH2_TREEISH:?}"
 RUN git submodule update --init --recursive
-# TODO: Remove when libssh2/libssh2#594 arrives to a stable version
-RUN sed -ri '/m4_undefine\(\[backend\]\)/d' ./configure.ac
 RUN ./buildconf
 RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared
 RUN make -j"$(nproc)"
