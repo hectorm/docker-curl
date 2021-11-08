@@ -151,4 +151,4 @@ RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--doh-url", "ht
 FROM base AS main
 
 # Dummy instruction so BuildKit does not skip the test stage
-RUN --mount=type=bind,from=test,source=/mnt/,target=/mnt/
+RUN --mount=type=bind,from=test,source=/curl,target=/curl ["/curl", "-V"]
