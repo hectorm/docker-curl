@@ -158,6 +158,9 @@ FROM scratch AS base
 # Copy cURL binary and certificate bundle
 COPY --from=build /tmp/usr/bin/curl /tmp/curl/ca-bundle.crt /
 
+ENTRYPOINT ["/curl"]
+CMD ["--help"]
+
 ##################################################
 ## "test" stage
 ##################################################
@@ -172,10 +175,10 @@ RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--doh-url", "ht
 RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--http3", "https://cloudflare-quic.com"]
 
 ##################################################
-## "curl" stage
+## "main" stage
 ##################################################
 
-FROM base AS curl
+FROM base AS main
 
-ENTRYPOINT ["/curl"]
-CMD ["--help"]
+# Dummy instruction so BuildKit does not skip the test stage
+RUN --mount=type=bind,from=test,source=/mnt/,target=/mnt/
