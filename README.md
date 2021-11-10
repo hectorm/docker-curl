@@ -10,5 +10,5 @@ docker run --rm hectormolinero/curl:latest --help
 ## Export build to local filesystem
 ```sh
 docker pull hectormolinero/curl:latest
-docker save hectormolinero/curl:latest | tar -xO --wildcards '*/layer.tar' | tar -xi
+docker save hectormolinero/curl:latest | tar -xO --wildcards '*/layer.tar' | tar -xi curl ca-bundle.crt
 ```

@@ -126,7 +126,7 @@ RUN make -j"$(nproc)"
 RUN make install
 
 # Build cURL
-ARG CURL_TREEISH=curl-7_79_1
+ARG CURL_TREEISH=curl-7_80_0
 ARG CURL_REMOTE=https://github.com/curl/curl.git
 RUN mkdir /tmp/curl/
 WORKDIR /tmp/curl/
@@ -179,6 +179,3 @@ RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--http3", "http
 ##################################################
 
 FROM base AS main
-
-# Dummy instruction so BuildKit does not skip the test stage
-RUN --mount=type=bind,from=test,source=/mnt/,target=/mnt/
