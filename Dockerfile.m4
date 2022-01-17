@@ -100,7 +100,7 @@ RUN make -j"$(nproc)"
 RUN make install
 
 # Build Nghttp3
-ARG NGHTTP3_TREEISH=main
+ARG NGHTTP3_TREEISH=v0.1.0
 ARG NGHTTP3_REMOTE=https://github.com/ngtcp2/nghttp3.git
 RUN mkdir /tmp/nghttp3/
 WORKDIR /tmp/nghttp3/
