@@ -73,7 +73,7 @@ RUN ./config --prefix="${TMPPREFIX:?}" --libdir=lib no-shared no-engine
 RUN make build_libs OPENSSLDIR= ENGINESDIR= -j"$(nproc)"
 RUN make install_dev
 
-# Build Nghttp2
+# Build nghttp2
 ARG NGHTTP2_TREEISH=v1.46.0
 ARG NGHTTP2_REMOTE=https://github.com/nghttp2/nghttp2.git
 RUN mkdir /tmp/nghttp2/
@@ -86,7 +86,7 @@ RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared --ena
 RUN make -j"$(nproc)"
 RUN make install
 
-# Build Ngtcp2
+# Build ngtcp2
 ARG NGTCP2_TREEISH=v0.1.0
 ARG NGTCP2_REMOTE=https://github.com/ngtcp2/ngtcp2.git
 RUN mkdir /tmp/ngtcp2/
@@ -99,7 +99,7 @@ RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared
 RUN make -j"$(nproc)"
 RUN make install
 
-# Build Nghttp3
+# Build nghttp3
 ARG NGHTTP3_TREEISH=v0.1.0
 ARG NGHTTP3_REMOTE=https://github.com/ngtcp2/nghttp3.git
 RUN mkdir /tmp/nghttp3/
