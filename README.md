@@ -4,11 +4,11 @@ A statically linked build of [cURL](https://github.com/curl/curl) in a Docker co
 
 ## Usage
 ```sh
-docker run --rm hectormolinero/curl:latest --help
+docker run --rm docker.io/hectorm/curl:latest --help
 ```
 
 ## Export build to local filesystem
 ```sh
-docker pull hectormolinero/curl:latest
-docker save hectormolinero/curl:latest | tar -xO --wildcards '*/layer.tar' | tar -xi curl ca-bundle.crt
+docker pull docker.io/hectorm/curl:latest
+docker save docker.io/hectorm/curl:latest | tar -xO --wildcards '*/layer.tar' | tar -xi curl ca-bundle.crt
 ```
