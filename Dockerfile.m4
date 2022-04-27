@@ -126,7 +126,7 @@ RUN make -j"$(nproc)"
 RUN make install
 
 # Build cURL
-ARG CURL_TREEISH=curl-7_82_0
+ARG CURL_TREEISH=curl-7_83_0
 ARG CURL_REMOTE=https://github.com/curl/curl.git
 RUN mkdir /tmp/curl/
 WORKDIR /tmp/curl/
@@ -134,7 +134,7 @@ RUN git clone "${CURL_REMOTE:?}" ./
 RUN git checkout "${CURL_TREEISH:?}"
 RUN git submodule update --init --recursive
 RUN autoreconf -fi && automake && autoconf
-RUN ./lib/mk-ca-bundle.pl ./ca-bundle.crt
+RUN ./scripts/mk-ca-bundle.pl ./ca-bundle.crt
 RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared \
 		--enable-alt-svc \
 		--with-ca-bundle=./ca-bundle.crt \
