@@ -150,23 +150,13 @@ RUN make -j"$(nproc)"
 RUN make install-strip
 
 ##################################################
-## "base" stage
-##################################################
-
-FROM scratch AS base
-
-# Copy cURL binary and certificate bundle
-COPY --from=build /tmp/usr/bin/curl /tmp/curl/ca-bundle.crt /
-
-ENTRYPOINT ["/curl"]
-CMD ["--help"]
-
-##################################################
 ## "test" stage
 ##################################################
 
-FROM base AS test
+FROM scratch AS test
 m4_ifdef([[CROSS_QEMU]], [[COPY --from=docker.io/hectorm/qemu-user-static:latest CROSS_QEMU CROSS_QEMU]])
+
+COPY --from=build /tmp/usr/bin/curl /tmp/curl/ca-bundle.crt /
 
 RUN ["/curl", "--version"]
 RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "https://cloudflare.com"]
@@ -178,7 +168,9 @@ RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--http3", "http
 ## "main" stage
 ##################################################
 
-FROM base AS main
+FROM scratch AS main
 
-# Dummy instruction so BuildKit does not skip the test stage
-RUN --mount=type=bind,from=test,source=/curl,target=/curl ["/curl", "--version"]
+COPY --from=test /curl /ca-bundle.crt /
+
+ENTRYPOINT ["/curl"]
+CMD ["--help"]
