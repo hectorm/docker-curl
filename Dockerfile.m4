@@ -133,6 +133,8 @@ WORKDIR /tmp/curl/
 RUN git clone "${CURL_REMOTE:?}" ./
 RUN git checkout "${CURL_TREEISH:?}"
 RUN git submodule update --init --recursive
+# Backport 32-bit ARM fix until the next version is released
+RUN git cherry-pick -n e2e7f54b7bea521fa8373095d0f43261a720cda0
 RUN autoreconf -fi && automake && autoconf
 RUN ./scripts/mk-ca-bundle.pl ./ca-bundle.crt
 RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared \
