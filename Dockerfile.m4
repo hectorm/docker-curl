@@ -153,7 +153,7 @@ RUN make install-strip
 ## "test" stage
 ##################################################
 
-FROM scratch AS test
+m4_ifdef([[CROSS_ARCH]], [[FROM docker.io/hectorm/scratch:CROSS_ARCH]], [[FROM scratch]]) AS test
 m4_ifdef([[CROSS_QEMU]], [[COPY --from=docker.io/hectorm/qemu-user-static:latest CROSS_QEMU CROSS_QEMU]])
 
 COPY --from=build /tmp/usr/bin/curl /tmp/curl/ca-bundle.crt /
@@ -168,7 +168,7 @@ RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--http3", "http
 ## "main" stage
 ##################################################
 
-FROM scratch AS main
+m4_ifdef([[CROSS_ARCH]], [[FROM docker.io/hectorm/scratch:CROSS_ARCH]], [[FROM scratch]]) AS main
 
 COPY --from=test /curl /ca-bundle.crt /
 
