@@ -126,7 +126,7 @@ RUN make -j"$(nproc)"
 RUN make install
 
 # Build cURL
-ARG CURL_TREEISH=curl-8_1_0
+ARG CURL_TREEISH=curl-8_1_1
 ARG CURL_REMOTE=https://github.com/curl/curl.git
 RUN mkdir /tmp/curl/
 WORKDIR /tmp/curl/
