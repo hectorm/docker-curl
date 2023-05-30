@@ -113,7 +113,7 @@ RUN make -j"$(nproc)"
 RUN make install
 
 # Build libssh2
-ARG LIBSSH2_TREEISH=libssh2-1.10.0
+ARG LIBSSH2_TREEISH=libssh2-1.11.0
 ARG LIBSSH2_REMOTE=https://github.com/libssh2/libssh2.git
 RUN mkdir /tmp/libssh2/
 WORKDIR /tmp/libssh2/
