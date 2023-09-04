@@ -38,7 +38,7 @@ ENV PKG_CONFIG_PATH=${TMPPREFIX}/lib/pkgconfig
 ENV LC_ALL=C TZ=UTC SOURCE_DATE_EPOCH=1
 
 # Build zlib
-ARG ZLIB_TREEISH=v1.2.13
+ARG ZLIB_TREEISH=v1.3
 ARG ZLIB_REMOTE=https://github.com/madler/zlib.git
 RUN mkdir /tmp/zlib/
 WORKDIR /tmp/zlib/
