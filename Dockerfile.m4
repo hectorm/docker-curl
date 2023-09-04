@@ -87,7 +87,7 @@ RUN make -j"$(nproc)"
 RUN make install
 
 # Build ngtcp2
-ARG NGTCP2_TREEISH=v0.18.0
+ARG NGTCP2_TREEISH=v0.19.0
 ARG NGTCP2_REMOTE=https://github.com/ngtcp2/ngtcp2.git
 RUN mkdir /tmp/ngtcp2/
 WORKDIR /tmp/ngtcp2/
