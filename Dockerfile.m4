@@ -62,7 +62,7 @@ RUN make libzstd.a-release -j"$(nproc)"
 RUN make install-pc install-static install-includes PREFIX="${TMPPREFIX:?}"
 
 # Build OpenSSL
-ARG OPENSSL_TREEISH=openssl-3.1.2+quic
+ARG OPENSSL_TREEISH=openssl-3.1.2-quic1
 ARG OPENSSL_REMOTE=https://github.com/quictls/openssl.git
 RUN mkdir /tmp/openssl/
 WORKDIR /tmp/openssl/
