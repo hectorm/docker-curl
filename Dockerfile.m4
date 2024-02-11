@@ -64,14 +64,14 @@ RUN make libzstd.a-release -j"$(nproc)"
 RUN make install-pc install-static install-includes PREFIX="${TMPPREFIX:?}"
 
 # Build OpenSSL
-ARG OPENSSL_TREEISH=opernssl-3.1.5-quic1
-ARG OPENSSL_REMOTE=https://github.com/quictls/openssl.git
+ARG OPENSSL_TREEISH=openssl-3.2.1
+ARG OPENSSL_REMOTE=https://github.com/openssl/openssl.git
 RUN mkdir /tmp/openssl/
 WORKDIR /tmp/openssl/
 RUN git clone "${OPENSSL_REMOTE:?}" ./
 RUN git checkout "${OPENSSL_TREEISH:?}"
 RUN git submodule update --init --recursive
-RUN ./config --prefix="${TMPPREFIX:?}" --libdir=lib no-shared no-engine
+RUN ./config --prefix="${TMPPREFIX:?}" --libdir=lib enable-tls1_3 no-shared no-engine
 RUN make build_libs OPENSSLDIR= ENGINESDIR= -j"$(nproc)"
 RUN make install_dev
 
@@ -85,19 +85,6 @@ RUN git checkout "${NGHTTP2_TREEISH:?}"
 RUN git submodule update --init --recursive
 RUN autoreconf -fi && automake && autoconf
 RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared --enable-lib-only
-RUN make -j"$(nproc)"
-RUN make install
-
-# Build ngtcp2
-ARG NGTCP2_TREEISH=v1.2.0
-ARG NGTCP2_REMOTE=https://github.com/ngtcp2/ngtcp2.git
-RUN mkdir /tmp/ngtcp2/
-WORKDIR /tmp/ngtcp2/
-RUN git clone "${NGTCP2_REMOTE:?}" ./
-RUN git checkout "${NGTCP2_TREEISH:?}"
-RUN git submodule update --init --recursive
-RUN autoreconf -fi && automake && autoconf
-RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared
 RUN make -j"$(nproc)"
 RUN make install
 
@@ -156,8 +143,8 @@ RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared \
 		--with-zlib="${TMPPREFIX:?}" \
 		--with-zstd="${TMPPREFIX:?}" \
 		--with-openssl="${TMPPREFIX:?}" \
+		--with-openssl-quic \
 		--with-nghttp2="${TMPPREFIX:?}" \
-		--with-ngtcp2="${TMPPREFIX:?}" \
 		--with-nghttp3="${TMPPREFIX:?}" \
 		--with-libssh2="${TMPPREFIX:?}" \
 		--with-libpsl="${TMPPREFIX:?}" \
