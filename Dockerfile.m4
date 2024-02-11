@@ -15,13 +15,17 @@ RUN apk add --no-cache \
 		coreutils \
 		curl \
 		findutils \
+		gengetopt \
 		gettext-dev \
 		git \
+		gperf \
 		gtk-doc \
 		libtool \
 		linux-headers \
+		make \
 		perl \
-		pkgconf
+		pkgconf \
+		texinfo
 
 # Switch to unprivileged user
 ENV USER=builder GROUP=builder
@@ -47,7 +51,9 @@ WORKDIR /tmp/zlib/
 RUN git clone "${ZLIB_REMOTE:?}" ./
 RUN git checkout "${ZLIB_TREEISH:?}"
 RUN git submodule update --init --recursive
-RUN ./configure --prefix="${TMPPREFIX:?}" --static
+RUN ./configure \
+		--prefix="${TMPPREFIX:?}" \
+		--static
 RUN make -j"$(nproc)"
 RUN make install
 
@@ -71,7 +77,13 @@ WORKDIR /tmp/openssl/
 RUN git clone "${OPENSSL_REMOTE:?}" ./
 RUN git checkout "${OPENSSL_TREEISH:?}"
 RUN git submodule update --init --recursive
-RUN ./config --prefix="${TMPPREFIX:?}" --libdir=lib enable-tls1_3 no-shared no-engine
+RUN ./config \
+		--prefix="${TMPPREFIX:?}" \
+		--libdir=lib \
+		no-shared \
+		no-engine \
+		no-apps \
+		enable-tls1_3
 RUN make build_libs OPENSSLDIR= ENGINESDIR= -j"$(nproc)"
 RUN make install_dev
 
@@ -83,8 +95,12 @@ WORKDIR /tmp/nghttp2/
 RUN git clone "${NGHTTP2_REMOTE:?}" ./
 RUN git checkout "${NGHTTP2_TREEISH:?}"
 RUN git submodule update --init --recursive
-RUN autoreconf -fi && automake && autoconf
-RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared --enable-lib-only
+RUN autoreconf -fi
+RUN ./configure \
+		--prefix="${TMPPREFIX:?}" \
+		--enable-static \
+		--disable-shared \
+		--enable-lib-only
 RUN make -j"$(nproc)"
 RUN make install
 
@@ -96,8 +112,12 @@ WORKDIR /tmp/nghttp3/
 RUN git clone "${NGHTTP3_REMOTE:?}" ./
 RUN git checkout "${NGHTTP3_TREEISH:?}"
 RUN git submodule update --init --recursive
-RUN autoreconf -fi && automake && autoconf
-RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared --enable-lib-only
+RUN autoreconf -fi
+RUN ./configure \
+		--prefix="${TMPPREFIX:?}" \
+		--enable-static \
+		--disable-shared \
+		--enable-lib-only
 RUN make -j"$(nproc)"
 RUN make install
 
@@ -110,7 +130,43 @@ RUN git clone "${LIBSSH2_REMOTE:?}" ./
 RUN git checkout "${LIBSSH2_TREEISH:?}"
 RUN git submodule update --init --recursive
 RUN ./buildconf
-RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared
+RUN ./configure \
+		--prefix="${TMPPREFIX:?}" \
+		--enable-static \
+		--disable-shared
+RUN make -j"$(nproc)"
+RUN make install
+
+# Build libunistring
+ARG LIBUNISTRING_TREEISH=v1.1
+ARG LIBUNISTRING_REMOTE=https://git.savannah.gnu.org/git/libunistring.git
+RUN mkdir /tmp/libunistring/
+WORKDIR /tmp/libunistring/
+RUN git clone "${LIBUNISTRING_REMOTE:?}" ./
+RUN git checkout "${LIBUNISTRING_TREEISH:?}"
+RUN git submodule update --init --recursive
+RUN ./autopull.sh && ./autogen.sh
+RUN ./configure \
+		--prefix="${TMPPREFIX:?}" \
+		--enable-static \
+		--disable-shared
+RUN make -j"$(nproc)"
+RUN make install
+
+# Build libidn2
+ARG LIBIDN2_TREEISH=v2.3.7
+ARG LIBIDN2_REMOTE=https://gitlab.com/libidn/libidn2.git
+RUN mkdir /tmp/libidn2/
+WORKDIR /tmp/libidn2/
+RUN git clone "${LIBIDN2_REMOTE:?}" ./
+RUN git checkout "${LIBIDN2_TREEISH:?}"
+RUN git submodule update --init --recursive
+RUN ./bootstrap --skip-po
+RUN ./configure \
+		--prefix="${TMPPREFIX:?}" \
+		--enable-static \
+		--disable-shared \
+		--disable-doc
 RUN make -j"$(nproc)"
 RUN make install
 
@@ -122,8 +178,12 @@ WORKDIR /tmp/libpsl/
 RUN git clone "${LIBPSL_REMOTE:?}" ./
 RUN git checkout "${LIBPSL_TREEISH:?}"
 RUN git submodule update --init --recursive
-RUN autoreconf -fi && automake && autoconf
-RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared
+RUN ./autogen.sh
+RUN ./configure \
+		--prefix="${TMPPREFIX:?}" \
+		--enable-static \
+		--disable-shared \
+		--disable-man
 RUN make -j"$(nproc)"
 RUN make install
 
@@ -135,9 +195,12 @@ WORKDIR /tmp/curl/
 RUN git clone "${CURL_REMOTE:?}" ./
 RUN git checkout "${CURL_TREEISH:?}"
 RUN git submodule update --init --recursive
-RUN autoreconf -fi && automake && autoconf
+RUN autoreconf -fi
 RUN ./scripts/mk-ca-bundle.pl ./ca-bundle.crt
-RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared \
+RUN ./configure \
+		--prefix="${TMPPREFIX:?}" \
+		--enable-static \
+		--disable-shared \
 		--enable-alt-svc \
 		--with-ca-bundle=./ca-bundle.crt \
 		--with-zlib="${TMPPREFIX:?}" \
@@ -147,8 +210,11 @@ RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared \
 		--with-nghttp2="${TMPPREFIX:?}" \
 		--with-nghttp3="${TMPPREFIX:?}" \
 		--with-libssh2="${TMPPREFIX:?}" \
+		--with-libidn2="${TMPPREFIX:?}" \
 		--with-libpsl="${TMPPREFIX:?}" \
-		LDFLAGS="--static ${LDFLAGS-}"
+		LDFLAGS="--static -L${TMPPREFIX:?}/lib ${LDFLAGS-}" \
+		CPPFLAGS="-I${TMPPREFIX:?}/include ${CPPFLAGS-}" \
+		LIBS='-lidn2 -lunistring'
 RUN make -j"$(nproc)"
 RUN make install-strip
 
@@ -166,6 +232,7 @@ RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "https://cloudfl
 RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--http2-prior-knowledge", "--tlsv1.3", "https://cloudflare.com"]
 RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--doh-url", "https://1.1.1.1/dns-query", "https://cloudflare.com"]
 RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--http3", "https://cloudflare-quic.com"]
+RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "https://はじめよう.みんな"]
 
 ##################################################
 ## "main" stage
