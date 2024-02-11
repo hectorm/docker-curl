@@ -15,7 +15,9 @@ RUN apk add --no-cache \
 		coreutils \
 		curl \
 		findutils \
+		gettext-dev \
 		git \
+		gtk-doc \
 		libtool \
 		linux-headers \
 		perl \
@@ -62,7 +64,7 @@ RUN make libzstd.a-release -j"$(nproc)"
 RUN make install-pc install-static install-includes PREFIX="${TMPPREFIX:?}"
 
 # Build OpenSSL
-ARG OPENSSL_TREEISH=openssl-3.1.4-quic1
+ARG OPENSSL_TREEISH=opernssl-3.1.5-quic1
 ARG OPENSSL_REMOTE=https://github.com/quictls/openssl.git
 RUN mkdir /tmp/openssl/
 WORKDIR /tmp/openssl/
@@ -125,8 +127,21 @@ RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared
 RUN make -j"$(nproc)"
 RUN make install
 
+# Build libpsl
+ARG LIBPSL_TREEISH=0.21.5
+ARG LIBPSL_REMOTE=https://github.com/rockdaboot/libpsl.git
+RUN mkdir /tmp/libpsl/
+WORKDIR /tmp/libpsl/
+RUN git clone "${LIBPSL_REMOTE:?}" ./
+RUN git checkout "${LIBPSL_TREEISH:?}"
+RUN git submodule update --init --recursive
+RUN autoreconf -fi && automake && autoconf
+RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared
+RUN make -j"$(nproc)"
+RUN make install
+
 # Build cURL
-ARG CURL_TREEISH=curl-8_5_0
+ARG CURL_TREEISH=curl-8_6_0
 ARG CURL_REMOTE=https://github.com/curl/curl.git
 RUN mkdir /tmp/curl/
 WORKDIR /tmp/curl/
@@ -145,6 +160,7 @@ RUN ./configure --prefix="${TMPPREFIX:?}" --enable-static --disable-shared \
 		--with-ngtcp2="${TMPPREFIX:?}" \
 		--with-nghttp3="${TMPPREFIX:?}" \
 		--with-libssh2="${TMPPREFIX:?}" \
+		--with-libpsl="${TMPPREFIX:?}" \
 		LDFLAGS="--static ${LDFLAGS-}"
 RUN make -j"$(nproc)"
 RUN make install-strip
