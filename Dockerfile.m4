@@ -248,9 +248,9 @@ COPY --from=build /tmp/usr/bin/curl /tmp/curl/ca-bundle.crt /
 
 RUN ["/curl", "--version"]
 RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "https://cloudflare.com"]
-RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--http2-prior-knowledge", "--tlsv1.3", "https://cloudflare.com"]
 RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--doh-url", "https://1.1.1.1/dns-query", "https://cloudflare.com"]
-RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--http3", "https://cloudflare-quic.com"]
+RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--http2-prior-knowledge", "--tlsv1.3", "https://cloudflare.com"]
+RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--http3-only", "https://cloudflare.com"]
 RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "https://はじめよう.みんな"]
 
 ##################################################
