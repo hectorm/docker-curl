@@ -68,23 +68,23 @@ WORKDIR /tmp/zstd/lib/
 RUN make libzstd.a-release -j"$(nproc)"
 RUN make install-pc install-static install-includes PREFIX="${TMPPREFIX:?}"
 
-# Build OpenSSL
-ARG OPENSSL_TREEISH=openssl-3.3.1
-ARG OPENSSL_REMOTE=https://github.com/openssl/openssl.git
-RUN mkdir /tmp/openssl/
-WORKDIR /tmp/openssl/
-RUN git clone "${OPENSSL_REMOTE:?}" ./
-RUN git checkout "${OPENSSL_TREEISH:?}"
+# Build wolfSSL
+ARG WOLFSSL_TREEISH=v5.7.2-stable
+ARG WOLFSSL_REMOTE=https://github.com/wolfSSL/wolfssl.git
+RUN mkdir /tmp/wolfssl/
+WORKDIR /tmp/wolfssl/
+RUN git clone "${WOLFSSL_REMOTE:?}" ./
+RUN git checkout "${WOLFSSL_TREEISH:?}"
 RUN git submodule update --init --recursive
-RUN ./config \
+RUN autoreconf -fi
+RUN ./configure \
 		--prefix="${TMPPREFIX:?}" \
-		--libdir=lib \
-		no-shared \
-		no-engine \
-		no-apps \
-		enable-tls1_3
-RUN make build_libs OPENSSLDIR= ENGINESDIR= -j"$(nproc)"
-RUN make install_dev
+		--enable-static \
+		--disable-shared \
+		--enable-reproducible-build \
+		--enable-all
+RUN make -j"$(nproc)"
+RUN make install
 
 # Build nghttp2
 ARG NGHTTP2_TREEISH=v1.62.1
@@ -99,7 +99,8 @@ RUN ./configure \
 		--prefix="${TMPPREFIX:?}" \
 		--enable-static \
 		--disable-shared \
-		--enable-lib-only
+		--enable-lib-only \
+		--with-wolfssl
 RUN make -j"$(nproc)"
 RUN make install
 
@@ -120,19 +121,39 @@ RUN ./configure \
 RUN make -j"$(nproc)"
 RUN make install
 
-# Build libssh2
-ARG LIBSSH2_TREEISH=libssh2-1.11.0
-ARG LIBSSH2_REMOTE=https://github.com/libssh2/libssh2.git
-RUN mkdir /tmp/libssh2/
-WORKDIR /tmp/libssh2/
-RUN git clone "${LIBSSH2_REMOTE:?}" ./
-RUN git checkout "${LIBSSH2_TREEISH:?}"
+# Build ngtcp2
+ARG NGTCP2_TREEISH=v1.6.0
+ARG NGTCP2_REMOTE=https://github.com/ngtcp2/ngtcp2.git
+RUN mkdir /tmp/ngtcp2/
+WORKDIR /tmp/ngtcp2/
+RUN git clone "${NGTCP2_REMOTE:?}" ./
+RUN git checkout "${NGTCP2_TREEISH:?}"
 RUN git submodule update --init --recursive
-RUN ./buildconf
+RUN autoreconf -fi
 RUN ./configure \
 		--prefix="${TMPPREFIX:?}" \
 		--enable-static \
-		--disable-shared
+		--disable-shared \
+		--enable-lib-only \
+		--with-wolfssl
+RUN make -j"$(nproc)"
+RUN make install
+
+# Build wolfSSH
+ARG WOLFSSH_TREEISH=v1.4.18-stable
+ARG WOLFSSH_REMOTE=https://github.com/wolfSSL/wolfssh.git
+RUN mkdir /tmp/wolfssh/
+WORKDIR /tmp/wolfssh/
+RUN git clone "${WOLFSSH_REMOTE:?}" ./
+RUN git checkout "${WOLFSSH_TREEISH:?}"
+RUN git submodule update --init --recursive
+RUN autoreconf -fi
+RUN ./configure \
+		--prefix="${TMPPREFIX:?}" \
+		--enable-static \
+		--disable-shared \
+		--enable-sftp \
+		--with-wolfssl="${TMPPREFIX:?}"
 RUN make -j"$(nproc)"
 RUN make install
 
@@ -204,11 +225,11 @@ RUN ./configure \
 		--with-ca-bundle=./ca-bundle.crt \
 		--with-zlib="${TMPPREFIX:?}" \
 		--with-zstd="${TMPPREFIX:?}" \
-		--with-openssl="${TMPPREFIX:?}" \
-		--with-openssl-quic \
+		--with-wolfssl="${TMPPREFIX:?}" \
 		--with-nghttp2="${TMPPREFIX:?}" \
 		--with-nghttp3="${TMPPREFIX:?}" \
-		--with-libssh2="${TMPPREFIX:?}" \
+		--with-ngtcp2="${TMPPREFIX:?}" \
+		--with-wolfssh="${TMPPREFIX:?}" \
 		--with-libidn2="${TMPPREFIX:?}" \
 		--with-libpsl="${TMPPREFIX:?}" \
 		LDFLAGS="--static -L${TMPPREFIX:?}/lib ${LDFLAGS-}" \
