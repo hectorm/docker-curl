@@ -222,6 +222,7 @@ RUN ./configure \
 		--enable-static \
 		--disable-shared \
 		--enable-alt-svc \
+		--enable-ech \
 		--with-ca-bundle=./ca-bundle.crt \
 		--with-zlib="${TMPPREFIX:?}" \
 		--with-zstd="${TMPPREFIX:?}" \
@@ -247,11 +248,11 @@ m4_ifdef([[CROSS_ARCH]], [[FROM docker.io/hectorm/scratch:CROSS_ARCH]], [[FROM s
 COPY --from=build /tmp/usr/bin/curl /tmp/curl/ca-bundle.crt /
 
 RUN ["/curl", "--version"]
-RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "https://cloudflare.com"]
-RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--doh-url", "https://1.1.1.1/dns-query", "https://cloudflare.com"]
-RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--http2-prior-knowledge", "--tlsv1.3", "https://cloudflare.com"]
-RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--http3-only", "https://cloudflare.com"]
-RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "https://はじめよう.みんな"]
+RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--url", "https://cloudflare.com", "--tlsv1.3"]
+RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--url", "https://cloudflare.com", "--http2-prior-knowledge"]
+RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--url", "https://cloudflare.com", "--http3-only"]
+RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--url", "https://cloudflare.com", "--doh-url", "https://1.1.1.1/dns-query"]
+RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--url", "https://はじめよう.みんな"]
 
 ##################################################
 ## "main" stage
