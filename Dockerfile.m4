@@ -239,6 +239,7 @@ RUN ./configure \
 		--disable-shared \
 		--disable-docs \
 		--enable-ares \
+		--enable-threaded-resolver \
 		--enable-ech \
 		--enable-websockets \
 		--with-ca-bundle=./ca-bundle.crt \
