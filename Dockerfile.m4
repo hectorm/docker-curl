@@ -237,6 +237,7 @@ RUN ./configure \
 		--prefix="${TMPPREFIX:?}" \
 		--enable-static \
 		--disable-shared \
+		--disable-docs \
 		--enable-ares \
 		--enable-ech \
 		--enable-websockets \
