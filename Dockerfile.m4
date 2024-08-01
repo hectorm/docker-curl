@@ -18,6 +18,7 @@ RUN apk add --no-cache \
 		gettext-dev \
 		git \
 		gperf \
+		groff \
 		gtk-doc \
 		libtool \
 		linux-headers \
@@ -223,6 +224,22 @@ RUN ./configure \
 RUN make -j"$(nproc)"
 RUN make install
 
+# Build OpenLDAP
+ARG OPENLDAP_TREEISH=OPENLDAP_REL_ENG_2_6_8
+ARG OPENLDAP_REMOTE=https://git.openldap.org/openldap/openldap.git
+RUN mkdir /tmp/openldap/
+WORKDIR /tmp/openldap/
+RUN git clone "${OPENLDAP_REMOTE:?}" ./
+RUN git checkout "${OPENLDAP_TREEISH:?}"
+RUN git submodule update --init --recursive
+RUN autoreconf -fi
+RUN ./configure \
+		--prefix="${TMPPREFIX:?}" \
+		--enable-static \
+		--disable-shared
+RUN make -j"$(nproc)"
+RUN make install
+
 # Build cURL
 ARG CURL_TREEISH=curl-8_9_1
 ARG CURL_REMOTE=https://github.com/curl/curl.git
@@ -242,6 +259,8 @@ RUN ./configure \
 		--enable-threaded-resolver \
 		--enable-ech \
 		--enable-websockets \
+		--enable-ldap \
+		--enable-ldaps \
 		--with-ca-bundle=./ca-bundle.crt \
 		--with-zlib="${TMPPREFIX:?}" \
 		--with-zstd="${TMPPREFIX:?}" \
@@ -274,6 +293,7 @@ RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--url", "https:
 RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--url", "https://cloudflare.com", "--doh-url", "https://one.one.one.one/dns-query"]
 RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--url", "https://defo.ie",        "--doh-url", "https://one.one.one.one/dns-query", "--ech", "true"]
 RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--url", "https://はじめよう.みんな"]
+RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--url", "ldaps://ldap-eu.apache.org"]
 
 ##################################################
 ## "main" stage
