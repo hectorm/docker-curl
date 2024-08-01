@@ -222,6 +222,7 @@ RUN ./configure \
 		--enable-static \
 		--disable-shared \
 		--enable-ech \
+		--enable-websockets \
 		--with-ca-bundle=./ca-bundle.crt \
 		--with-zlib="${TMPPREFIX:?}" \
 		--with-zstd="${TMPPREFIX:?}" \
