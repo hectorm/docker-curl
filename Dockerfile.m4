@@ -251,7 +251,8 @@ RUN ["/curl", "--version"]
 RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--url", "https://cloudflare.com", "--tlsv1.3"]
 RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--url", "https://cloudflare.com", "--http2-prior-knowledge"]
 RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--url", "https://cloudflare.com", "--http3-only"]
-RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--url", "https://cloudflare.com", "--doh-url", "https://1.1.1.1/dns-query"]
+RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--url", "https://cloudflare.com", "--doh-url", "https://one.one.one.one/dns-query"]
+RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--url", "https://defo.ie",        "--doh-url", "https://one.one.one.one/dns-query", "--ech", "true"]
 RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--url", "https://はじめよう.みんな"]
 
 ##################################################
