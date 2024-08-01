@@ -92,7 +92,7 @@ WORKDIR /tmp/wolfssl/
 RUN git clone "${WOLFSSL_REMOTE:?}" ./
 RUN git checkout "${WOLFSSL_TREEISH:?}"
 RUN git submodule update --init --recursive
-RUN autoreconf -fi
+RUN ./autogen.sh
 RUN ./configure \
 		--prefix="${TMPPREFIX:?}" \
 		--enable-static \
