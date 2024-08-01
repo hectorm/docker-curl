@@ -221,7 +221,6 @@ RUN ./configure \
 		--prefix="${TMPPREFIX:?}" \
 		--enable-static \
 		--disable-shared \
-		--enable-alt-svc \
 		--enable-ech \
 		--with-ca-bundle=./ca-bundle.crt \
 		--with-zlib="${TMPPREFIX:?}" \
