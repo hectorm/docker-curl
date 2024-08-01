@@ -68,6 +68,22 @@ WORKDIR /tmp/zstd/lib/
 RUN make libzstd.a-release -j"$(nproc)"
 RUN make install-pc install-static install-includes PREFIX="${TMPPREFIX:?}"
 
+# Build c-ares
+ARG C_ARES_TREEISH=v1.32.3
+ARG C_ARES_REMOTE=https://github.com/c-ares/c-ares.git
+RUN mkdir /tmp/c-ares/
+WORKDIR /tmp/c-ares/
+RUN git clone "${C_ARES_REMOTE:?}" ./
+RUN git checkout "${C_ARES_TREEISH:?}"
+RUN git submodule update --init --recursive
+RUN autoreconf -fi
+RUN ./configure \
+		--prefix="${TMPPREFIX:?}" \
+		--enable-static \
+		--disable-shared
+RUN make -j"$(nproc)"
+RUN make install
+
 # Build wolfSSL
 ARG WOLFSSL_TREEISH=v5.7.2-stable
 ARG WOLFSSL_REMOTE=https://github.com/wolfSSL/wolfssl.git
@@ -221,6 +237,7 @@ RUN ./configure \
 		--prefix="${TMPPREFIX:?}" \
 		--enable-static \
 		--disable-shared \
+		--enable-ares \
 		--enable-ech \
 		--enable-websockets \
 		--with-ca-bundle=./ca-bundle.crt \
@@ -251,6 +268,7 @@ RUN ["/curl", "--version"]
 RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--url", "https://cloudflare.com", "--tlsv1.3"]
 RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--url", "https://cloudflare.com", "--http2-prior-knowledge"]
 RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--url", "https://cloudflare.com", "--http3-only"]
+RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--url", "https://cloudflare.com", "--dns-servers", "1.1.1.1,1.0.0.1"]
 RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--url", "https://cloudflare.com", "--doh-url", "https://one.one.one.one/dns-query"]
 RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--url", "https://defo.ie",        "--doh-url", "https://one.one.one.one/dns-query", "--ech", "true"]
 RUN ["/curl", "--verbose", "--silent", "--output", "/dev/null", "--url", "https://はじめよう.みんな"]
