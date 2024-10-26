@@ -175,7 +175,7 @@ RUN make -j"$(nproc)"
 RUN make install
 
 # Build libunistring
-ARG LIBUNISTRING_TREEISH=v1.2
+ARG LIBUNISTRING_TREEISH=v1.3
 ARG LIBUNISTRING_REMOTE=https://git.savannah.gnu.org/git/libunistring.git
 RUN mkdir /tmp/libunistring/
 WORKDIR /tmp/libunistring/
