@@ -157,7 +157,7 @@ RUN make -j"$(nproc)"
 RUN make install
 
 # Build wolfSSH
-ARG WOLFSSH_TREEISH=v1.4.18-stable
+ARG WOLFSSH_TREEISH=v1.4.19-stable
 ARG WOLFSSH_REMOTE=https://github.com/wolfSSL/wolfssh.git
 RUN mkdir /tmp/wolfssh/
 WORKDIR /tmp/wolfssh/
