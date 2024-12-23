@@ -225,7 +225,7 @@ RUN make -j"$(nproc)"
 RUN make install
 
 # Build OpenLDAP
-ARG OPENLDAP_TREEISH=OPENLDAP_REL_ENG_2_6_8
+ARG OPENLDAP_TREEISH=OPENLDAP_REL_ENG_2_6_9
 ARG OPENLDAP_REMOTE=https://git.openldap.org/openldap/openldap.git
 RUN mkdir /tmp/openldap/
 WORKDIR /tmp/openldap/
