@@ -70,7 +70,7 @@ RUN make libzstd.a-release -j"$(nproc)"
 RUN make install-pc install-static install-includes PREFIX="${TMPPREFIX:?}"
 
 # Build c-ares
-ARG C_ARES_TREEISH=v1.34.2
+ARG C_ARES_TREEISH=v1.34.4
 ARG C_ARES_REMOTE=https://github.com/c-ares/c-ares.git
 RUN mkdir /tmp/c-ares/
 WORKDIR /tmp/c-ares/
