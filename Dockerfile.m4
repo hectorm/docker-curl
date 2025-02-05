@@ -86,7 +86,7 @@ RUN make -j"$(nproc)"
 RUN make install
 
 # Build wolfSSL
-ARG WOLFSSL_TREEISH=v5.7.4-stable
+ARG WOLFSSL_TREEISH=v5.7.6-stable
 ARG WOLFSSL_REMOTE=https://github.com/wolfSSL/wolfssl.git
 RUN mkdir /tmp/wolfssl/
 WORKDIR /tmp/wolfssl/
