@@ -191,7 +191,7 @@ RUN make -j"$(nproc)"
 RUN make install
 
 # Build libidn2
-ARG LIBIDN2_TREEISH=v2.3.7
+ARG LIBIDN2_TREEISH=v2.3.8
 ARG LIBIDN2_REMOTE=https://gitlab.com/libidn/libidn2.git
 RUN mkdir /tmp/libidn2/
 WORKDIR /tmp/libidn2/
