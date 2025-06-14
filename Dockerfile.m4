@@ -104,7 +104,7 @@ RUN make -j"$(nproc)"
 RUN make install
 
 # Build nghttp2
-ARG NGHTTP2_TREEISH=v1.64.0
+ARG NGHTTP2_TREEISH=v1.65.0
 ARG NGHTTP2_REMOTE=https://github.com/nghttp2/nghttp2.git
 RUN mkdir /tmp/nghttp2/
 WORKDIR /tmp/nghttp2/
