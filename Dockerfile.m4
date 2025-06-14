@@ -58,7 +58,7 @@ RUN make -j"$(nproc)"
 RUN make install
 
 # Build zstd
-ARG ZSTD_TREEISH=v1.5.6
+ARG ZSTD_TREEISH=v1.5.7
 ARG ZSTD_REMOTE=https://github.com/facebook/zstd.git
 RUN mkdir /tmp/zstd/
 WORKDIR /tmp/zstd/
